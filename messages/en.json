@@ -60,7 +60,8 @@
     "radar": { "title": "The Radar", "desc": "You are at the center. Moon and Sun are fixed points in the sky. Aircraft move — green means on a transit path." },
     "radius": { "title": "Search radius", "desc": "How many km around you we query for aircraft. 25 km is the optimal value to avoid noise." },
     "margin": { "title": "Angular margin", "desc": "The tolerance to call an aircraft 'in transit'. Moon and Sun are ~0.5° in diameter. At ±0.5° you only catch true disk transits." },
-    "notifications": { "title": "Notifications", "desc": "Install the app and enable notifications to receive alerts even with your phone in your pocket." }
+    "notifications": { "title": "Notifications", "desc": "Install the app and enable notifications to receive alerts even with your phone in your pocket." },
+    "listReading": { "title": "How to read the List", "desc": "The green section shows real transits with a countdown. The grey \"Nearby aircraft\" section shows all other aircraft with two values: \"now\" is the current angular distance from the aircraft to the Moon/Sun; \"min\" is the minimum distance it will reach in the next 10 minutes. If \"min\" drops below your set margin (e.g. 0.5°), the aircraft moves up to green as a transit. The Moon and Sun are about 0.5° in diameter." }
   },
   "nav": {
     "monitor": "Monitor",

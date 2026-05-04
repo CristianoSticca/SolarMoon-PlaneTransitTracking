@@ -67,6 +67,31 @@ function MarginDiagram() {
   )
 }
 
+function ListExampleDiagram() {
+  return (
+    <div className="w-full space-y-2 text-left">
+      {/* Transit row */}
+      <div className="rounded-lg px-3 py-2 border border-green-400/40 bg-green-400/8">
+        <div className="text-xs font-semibold text-green-400">✈ AZA123 → 🌙 Luna</div>
+        <div className="flex justify-between items-center mt-0.5">
+          <span className="text-white/30 text-xs">Scarto ±0.12°</span>
+          <span className="text-white font-mono text-sm font-bold">2:34</span>
+        </div>
+      </div>
+      {/* Nearby separator */}
+      <div className="text-white/20 text-xs px-1 pt-1">Aerei vicini (nessun transito previsto)</div>
+      {/* Nearby row */}
+      <div className="rounded-lg px-3 py-2 border border-white/5 bg-white/2 opacity-60">
+        <div className="text-xs text-white/50">✈ RYR456 · 🌙 Luna</div>
+        <div className="flex justify-between items-center mt-0.5">
+          <span className="text-white/25 text-xs">min 2.34° · ora 4.12°</span>
+          <span className="text-white/25 text-xs font-mono">no transit</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function GuideContent() {
   const t = useTranslations('guide')
 
@@ -93,6 +118,12 @@ export function GuideContent() {
         icon="🔔"
         title={t('notifications.title')}
         desc={t('notifications.desc')}
+      />
+      <Section
+        icon="📋"
+        title={t('listReading.title')}
+        desc={t('listReading.desc')}
+        visual={<ListExampleDiagram />}
       />
     </div>
   )

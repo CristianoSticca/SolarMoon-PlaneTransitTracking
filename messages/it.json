@@ -60,7 +60,8 @@
     "radar": { "title": "Il Radar", "desc": "Tu sei al centro. Luna e Sole sono punti fissi nel cielo. Gli aerei si muovono — in verde se in rotta di transito." },
     "radius": { "title": "Raggio di ricerca", "desc": "Quanti km intorno a te interroghiamo per trovare aerei. 25 km è il valore ottimale per non avere troppo rumore." },
     "margin": { "title": "Margine angolare", "desc": "La tolleranza per considerare un aereo 'in transito'. Luna e Sole misurano ~0.5° di diametro. Con ±0.5° catturi solo i transiti veri sul disco." },
-    "notifications": { "title": "Notifiche", "desc": "Installa l'app e abilita le notifiche per ricevere avvisi anche con il telefono in tasca." }
+    "notifications": { "title": "Notifiche", "desc": "Installa l'app e abilita le notifiche per ricevere avvisi anche con il telefono in tasca." },
+    "listReading": { "title": "Come leggere la Lista", "desc": "La sezione verde mostra i transiti reali con countdown. La sezione grigia \"Aerei vicini\" mostra tutti gli altri aerei con due valori: \"ora\" è la distanza angolare attuale dall'aereo alla Luna/Sole; \"min\" è la distanza minima che raggiungerà nei prossimi 10 minuti. Se \"min\" scende sotto il tuo margine impostato (es. 0.5°), l'aereo sale in verde come transito. La Luna e il Sole misurano circa 0.5° di diametro." }
   },
   "nav": {
     "monitor": "Monitor",
