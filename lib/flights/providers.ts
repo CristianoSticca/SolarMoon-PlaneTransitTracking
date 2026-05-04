@@ -1,7 +1,8 @@
 import type { Aircraft, FlightApiResponse } from './types'
 import { normalizeAdsbOne, normalizeAirplanesLive, normalizeOpenSky } from './normalizer'
 
-const TIMEOUT_MS = 2000
+const TIMEOUT_MS = 8000
+const KM_TO_NM = 0.539957
 
 async function fetchWithTimeout(url: string, options?: RequestInit): Promise<Response> {
   const controller = new AbortController()
@@ -14,7 +15,8 @@ async function fetchWithTimeout(url: string, options?: RequestInit): Promise<Res
 }
 
 export async function fetchAdsbOne(lat: number, lon: number, radiusKm: number): Promise<Aircraft[]> {
-  const url = `https://api.adsb.one/v2/lat/${lat}/lon/${lon}/dist/${radiusKm}`
+  const radiusNm = Math.round(radiusKm * KM_TO_NM)
+  const url = `https://api.adsb.one/v2/point/${lat}/${lon}/${radiusNm}`
   const res = await fetchWithTimeout(url)
   if (!res.ok) throw new Error(`ADSB-One HTTP ${res.status}`)
   const data = await res.json()
@@ -22,7 +24,8 @@ export async function fetchAdsbOne(lat: number, lon: number, radiusKm: number): 
 }
 
 export async function fetchAirplanesLive(lat: number, lon: number, radiusKm: number): Promise<Aircraft[]> {
-  const url = `https://api.airplanes.live/v2/lat/${lat}/lon/${lon}/dist/${radiusKm}`
+  const radiusNm = Math.round(radiusKm * KM_TO_NM)
+  const url = `https://api.airplanes.live/v2/point/${lat}/${lon}/${radiusNm}`
   const res = await fetchWithTimeout(url)
   if (!res.ok) throw new Error(`Airplanes.live HTTP ${res.status}`)
   const data = await res.json()
