@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchFlightsWithFallback } from '@/lib/flights/providers'
-import { createClient } from '@/lib/supabase/server'
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { searchParams } = req.nextUrl
+export async function GET(req: NextRequest) {  const { searchParams } = req.nextUrl
   const lat = parseFloat(searchParams.get('lat') ?? '')
   const lon = parseFloat(searchParams.get('lon') ?? '')
   const radius = parseInt(searchParams.get('radius') ?? '25', 10)
