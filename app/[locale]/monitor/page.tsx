@@ -48,7 +48,7 @@ export default function MonitorPage() {
   const lat = geo.status === 'granted' ? geo.lat : null
   const lon = geo.status === 'granted' ? geo.lon : null
 
-  const { data: flightData, loading, error: flightError } = useFlights({
+  const { data: flightData, loading } = useFlights({
     lat,
     lon,
     radiusKm: prefs?.search_radius_km ?? DEFAULT_RADIUS,
@@ -107,13 +107,6 @@ export default function MonitorPage() {
 
       {/* Toggle */}
       <MonitorToggle view={view} onChange={setView} />
-
-      {/* Flight API error */}
-      {flightError && (
-        <div className="rounded-xl border border-orange-400/30 bg-orange-400/8 px-4 py-2 text-orange-300 text-xs font-mono break-all">
-          ✈ API error: {flightError}
-        </div>
-      )}
 
       {/* GPS error */}
       {geo.status === 'denied' && (
