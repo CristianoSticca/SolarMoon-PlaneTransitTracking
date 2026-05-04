@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -8,6 +8,7 @@ import { useFlights } from '@/hooks/useFlights'
 import { useTransitDetection } from '@/hooks/useTransitDetection'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { useSessionLog } from '@/hooks/useSessionLog'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { RadarView } from '@/components/monitor/RadarView'
 import { ListView } from '@/components/monitor/ListView'
 import { TransitAlert } from '@/components/monitor/TransitAlert'
@@ -63,6 +64,26 @@ export default function MonitorPage() {
 
   // Session log — persists detected transits in sessionStorage
   useSessionLog(transitEvents)
+
+  // Push notification when transit is within lead time
+  const { notify } = usePushNotifications()
+  const notifiedRef = useRef(new Set<string>())
+
+  useEffect(() => {
+    if (!transitEvents.length) return
+    const leadSec = (prefs?.notification_lead_min ?? 3) * 60
+    for (const ev of transitEvents) {
+      const key = `${ev.aircraft.icao}-${ev.target}-${ev.contactTimestamp}`
+      if (ev.countdown <= leadSec && !notifiedRef.current.has(key)) {
+        notifiedRef.current.add(key)
+        const targetLabel = ev.target === 'moon' ? '🌙 Luna' : '☀️ Sole'
+        notify(
+          `✈ ${ev.aircraft.callsign || ev.aircraft.icao} → ${targetLabel}`,
+          `Transito tra ${Math.ceil(ev.countdown / 60)} min · Scarto ±${ev.minAngularSeparation.toFixed(2)}°`
+        )
+      }
+    }
+  }, [transitEvents, notify, prefs])
 
   async function handleLogout() {
     await createClient().auth.signOut()
