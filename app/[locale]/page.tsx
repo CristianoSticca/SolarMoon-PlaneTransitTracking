@@ -14,10 +14,11 @@ export default async function RootPage({
 
   const { data: prefs } = await supabase
     .from('user_preferences')
-    .select('user_id')
+    .select('user_id, language')
     .eq('user_id', user.id)
     .single()
 
   if (!prefs) redirect(`/${locale}/onboarding`)
-  redirect(`/${locale}/monitor`)
+  const targetLocale = prefs.language ?? locale
+  redirect(`/${targetLocale}/monitor`)
 }

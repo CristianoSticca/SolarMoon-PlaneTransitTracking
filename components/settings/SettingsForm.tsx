@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 interface Prefs {
   language: string
@@ -26,6 +27,16 @@ export function SettingsForm({
   const [prefs, setPrefs] = useState(initialPrefs)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [gpsStatus, setGpsStatus] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown')
+  const { state: pushState, request: requestPush } = usePushNotifications()
+
+  useEffect(() => {
+    if (!navigator.permissions) return
+    navigator.permissions.query({ name: 'geolocation' }).then(result => {
+      setGpsStatus(result.state as 'granted' | 'denied' | 'prompt')
+      result.onchange = () => setGpsStatus(result.state as 'granted' | 'denied' | 'prompt')
+    })
+  }, [])
 
   async function handleSave() {
     setSaving(true)
@@ -130,6 +141,46 @@ export function SettingsForm({
       <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between">
         <span className="text-sm text-white/70">{t('provider')}</span>
         <span className="text-green-400 text-xs">{t('providerAuto')}</span>
+      </div>
+
+      {/* GPS permission */}
+      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm text-white/70">{t('gpsTitle')}</p>
+          <p className="text-xs mt-0.5 text-white/40">
+            {gpsStatus === 'granted' && <span className="text-green-400">{t('gpsGranted')}</span>}
+            {gpsStatus === 'denied' && <span className="text-red-400">{t('gpsDenied')}</span>}
+            {(gpsStatus === 'prompt' || gpsStatus === 'unknown') && t('gpsPrompt')}
+          </p>
+        </div>
+        {gpsStatus === 'prompt' && (
+          <button
+            onClick={() => navigator.geolocation.getCurrentPosition(() => setGpsStatus('granted'), () => setGpsStatus('denied'))}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
+          >
+            {t('gpsRequest')}
+          </button>
+        )}
+      </div>
+
+      {/* Push notifications */}
+      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm text-white/70">{t('notifTitle')}</p>
+          <p className="text-xs mt-0.5 text-white/40">
+            {pushState === 'granted' && <span className="text-green-400">{t('notifGranted')}</span>}
+            {pushState === 'denied' && <span className="text-red-400">{t('notifDenied')}</span>}
+            {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
+          </p>
+        </div>
+        {(pushState === 'idle') && (
+          <button
+            onClick={requestPush}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
+          >
+            {t('notifRequest')}
+          </button>
+        )}
       </div>
 
       <button

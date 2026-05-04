@@ -113,10 +113,16 @@ export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
           const az = (Math.atan2(ac.lon - lon, ac.lat - lat) * 180 / Math.PI + 360) % 360
           const { x, y } = azElToXY(az, elDeg)
           const isTransit = transitIcaos.has(ac.icao)
+          const color = isTransit ? '#4ade80' : '#94a3b8'
           return (
-            <g key={ac.icao}>
-              {isTransit && <circle cx={x} cy={y} r={11} fill="none" stroke="#4ade80" strokeWidth="1" opacity="0.5" />}
-              <circle cx={x} cy={y} r={isTransit ? 5 : 3.5} fill={isTransit ? '#4ade80' : '#64748b'} opacity={isTransit ? 1 : 0.6} />
+            <g key={ac.icao} transform={`translate(${x},${y}) rotate(${ac.heading})`}>
+              {isTransit && <circle cx={0} cy={0} r={13} fill="none" stroke="#4ade80" strokeWidth="1" opacity="0.5" />}
+              {/* Airplane shape: body + wings + tail */}
+              <path
+                d="M0,-7 L1.5,-2 L5,0 L1.5,1 L1,5 L0,4 L-1,5 L-1.5,1 L-5,0 L-1.5,-2 Z"
+                fill={color}
+                opacity={isTransit ? 1 : 0.7}
+              />
             </g>
           )
         })}
