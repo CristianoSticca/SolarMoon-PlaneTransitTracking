@@ -2,7 +2,7 @@
   "name": "SolarMoon",
   "short_name": "SolarMoon",
   "description": "Track aircraft transits across Moon and Sun for astrophotography",
-  "start_url": "/it/monitor",
+  "start_url": "/it",
   "display": "standalone",
   "background_color": "#0f0c29",
   "theme_color": "#302b63",
