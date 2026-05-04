@@ -86,13 +86,12 @@ export function detectTransits(
         const acPos = aircraftAngularPos(observer, lat, lon, ac.altitudeFt)
         const sep = angularSeparation(acPos, celestial)
 
-        if (sep < minSep) {
-          minSep = sep
-          if (sep < marginDeg) contactSeconds = s
-        }
+        if (sep < minSep) minSep = sep
+        // Record first entry into transit margin (not last — photographer needs entry time)
+        if (sep < marginDeg && contactSeconds < 0) contactSeconds = s
 
-        // Early exit: separation growing and past minimum, contact already found
-        if (sep > minSep + 1 && contactSeconds >= 0) break
+        // Early exit: separation growing well past minimum and transit zone already found
+        if (sep > minSep + Math.max(marginDeg * 0.5, 0.3) && contactSeconds >= 0) break
       }
 
       if (contactSeconds >= 0 && minSep < marginDeg) {
