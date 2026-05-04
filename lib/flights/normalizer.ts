@@ -28,8 +28,7 @@ export function normalizeAirplanesLive(raw: Record<string, unknown>): Aircraft |
 
 // OpenSky returns state vectors as arrays
 export function normalizeOpenSky(raw: unknown[]): Aircraft | null {
-  const onGround = raw[8] as boolean
-  if (onGround || raw[5] == null || raw[6] == null) return null
+  if (raw[8] === true || raw[5] == null || raw[6] == null) return null
   const altM = Number(raw[7] ?? 0)
   return {
     icao: String(raw[0] ?? '').toUpperCase(),

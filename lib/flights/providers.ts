@@ -57,13 +57,16 @@ export async function fetchFlightsWithFallback(
     { name: 'opensky', fn: () => fetchOpenSky(lat, lon, radiusKm) },
   ]
 
+  const errors: string[] = []
   for (const { name, fn } of providers) {
     try {
       const aircraft = await fn()
       return { aircraft, provider: name, timestamp: Date.now() }
-    } catch {
-      // try next provider
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      errors.push(`${name}: ${msg}`)
+      console.warn(`[flights] provider ${name} failed: ${msg}`)
     }
   }
-  throw new Error('All flight data providers failed')
+  throw new Error(`All flight data providers failed: ${errors.join(' | ')}`)
 }
