@@ -31,7 +31,15 @@ export function SettingsForm({
   const { state: pushState, request: requestPush } = usePushNotifications()
 
   useEffect(() => {
-    if (!navigator.permissions) return
+    if (!navigator.permissions) {
+      // iOS Safari doesn't support permissions.query — probe directly
+      navigator.geolocation.getCurrentPosition(
+        () => setGpsStatus('granted'),
+        (err) => setGpsStatus(err.code === 1 ? 'denied' : 'prompt'),
+        { timeout: 100, maximumAge: Infinity }
+      )
+      return
+    }
     navigator.permissions.query({ name: 'geolocation' }).then(result => {
       setGpsStatus(result.state as 'granted' | 'denied' | 'prompt')
       result.onchange = () => setGpsStatus(result.state as 'granted' | 'denied' | 'prompt')
@@ -46,7 +54,7 @@ export function SettingsForm({
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     if (prefs.language !== locale) {
-      router.push(`/${prefs.language}/settings`)
+      window.location.replace(`/${prefs.language}/settings`)
     }
   }
 
@@ -173,13 +181,16 @@ export function SettingsForm({
             {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
           </p>
         </div>
-        {(pushState === 'idle') && (
+        {pushState === 'idle' && (
           <button
             onClick={requestPush}
             className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
           >
             {t('notifRequest')}
           </button>
+        )}
+        {pushState === 'unsupported' && (
+          <span className="text-xs text-white/30 text-right">iOS 16.4+{"\n"}+ home screen</span>
         )}
       </div>
 
