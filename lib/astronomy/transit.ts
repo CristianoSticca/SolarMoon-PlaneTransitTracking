@@ -9,6 +9,13 @@ export interface TransitEvent {
   minAngularSeparation: number  // degrees
 }
 
+export interface NearbyAircraft {
+  aircraft: Aircraft
+  target: 'moon' | 'sun'
+  currentSeparationDeg: number
+  minProjectedSeparationDeg: number
+}
+
 interface Observer {
   lat: number
   lon: number
@@ -67,12 +74,13 @@ export function detectTransits(
   moon: CelestialPosition,
   sun: CelestialPosition,
   options: { marginDeg: number }
-): TransitEvent[] {
+): { events: TransitEvent[]; nearby: NearbyAircraft[] } {
   const { marginDeg } = options
   const now = Date.now()
   const HORIZON_S = 600  // 10 minutes
   const STEP_S = 5
   const events: TransitEvent[] = []
+  const nearby: NearbyAircraft[] = []
 
   for (const ac of aircraft) {
     if (ac.altitudeFt < 1000) continue  // skip ground traffic
@@ -80,6 +88,7 @@ export function detectTransits(
     for (const [target, celestial] of [['moon', moon], ['sun', sun]] as const) {
       let minSep = Infinity
       let contactSeconds = -1
+      const currentSep = angularSeparation(aircraftAngularPos(observer, ac.lat, ac.lon, ac.altitudeFt), celestial)
 
       for (let s = 0; s <= HORIZON_S; s += STEP_S) {
         const { lat, lon } = projectPosition(ac, s)
@@ -87,10 +96,8 @@ export function detectTransits(
         const sep = angularSeparation(acPos, celestial)
 
         if (sep < minSep) minSep = sep
-        // Record first entry into transit margin (not last — photographer needs entry time)
         if (sep < marginDeg && contactSeconds < 0) contactSeconds = s
 
-        // Early exit: separation growing well past minimum and transit zone already found
         if (sep > minSep + Math.max(marginDeg * 0.5, 0.3) && contactSeconds >= 0) break
       }
 
@@ -102,9 +109,24 @@ export function detectTransits(
           countdown: contactSeconds,
           minAngularSeparation: minSep,
         })
+      } else {
+        nearby.push({
+          aircraft: ac,
+          target,
+          currentSeparationDeg: currentSep,
+          minProjectedSeparationDeg: minSep === Infinity ? currentSep : minSep,
+        })
       }
     }
   }
 
-  return events.sort((a, b) => a.countdown - b.countdown)
+  // Keep top 5 nearest per target, sorted by min projected separation
+  const topNearby = nearby
+    .sort((a, b) => a.minProjectedSeparationDeg - b.minProjectedSeparationDeg)
+    .slice(0, 10)
+
+  return {
+    events: events.sort((a, b) => a.countdown - b.countdown),
+    nearby: topNearby,
+  }
 }

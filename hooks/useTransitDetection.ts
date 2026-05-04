@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { getMoonPosition, getSunPosition } from '@/lib/astronomy/celestial'
-import { detectTransits, type TransitEvent } from '@/lib/astronomy/transit'
+import { detectTransits, type TransitEvent, type NearbyAircraft } from '@/lib/astronomy/transit'
 import type { Aircraft } from '@/lib/flights/types'
 
 interface Options {
@@ -12,9 +12,12 @@ interface Options {
   marginDeg: number
 }
 
-export function useTransitDetection({ aircraft, lat, lon, marginDeg }: Options): TransitEvent[] {
+export function useTransitDetection({ aircraft, lat, lon, marginDeg }: Options): {
+  events: TransitEvent[]
+  nearby: NearbyAircraft[]
+} {
   return useMemo(() => {
-    if (!aircraft.length) return []
+    if (!aircraft.length) return { events: [], nearby: [] }
     const now = new Date()
     const moon = getMoonPosition(lat, lon, now)
     const sun = getSunPosition(lat, lon, now)

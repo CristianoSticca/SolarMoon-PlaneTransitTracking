@@ -55,7 +55,7 @@ export default function MonitorPage() {
     enabled: geo.status === 'granted',
   })
 
-  const transitEvents = useTransitDetection({
+  const { events: transitEvents, nearby: nearbyAircraft } = useTransitDetection({
     aircraft: flightData?.aircraft ?? [],
     lat: lat ?? 0,
     lon: lon ?? 0,
@@ -125,7 +125,7 @@ export default function MonitorPage() {
             lon={lon}
           />
         ) : (
-          <ListView events={transitEvents} />
+          <ListView events={transitEvents} nearby={nearbyAircraft} />
         )
       )}
 

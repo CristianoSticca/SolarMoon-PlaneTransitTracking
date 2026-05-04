@@ -23,6 +23,7 @@
     "list": "List",
     "live": "live",
     "noTransits": "No imminent transits",
+    "nearbyTitle": "Nearby aircraft (no transit predicted)",
     "searching": "Searching...",
     "transitAlert": "{callsign} → {target} in",
     "moon": "Moon",
