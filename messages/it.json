@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "SolarMoon",
+    "tagline": "Cattura il momento perfetto"
+  },
+  "login": {
+    "title": "Accedi",
+    "emailPlaceholder": "la-tua@email.com",
+    "submit": "Invia Magic Link",
+    "hint": "Nessuna password richiesta — riceverai un link via email",
+    "sent": "Link inviato! Controlla la tua casella email.",
+    "error": "Errore durante l'invio. Riprova."
+  },
+  "onboarding": {
+    "gps": { "title": "Posizione GPS", "desc": "Necessaria per calcolare i transiti dalla tua posizione", "action": "Autorizza" },
+    "notifications": { "title": "Notifiche Push", "desc": "Per avvisarti quando un transito si avvicina", "action": "Abilita" },
+    "install": { "title": "Installa l'app", "desc": "Aggiungi alla home screen per la migliore esperienza", "action": "Installa" },
+    "skip": "Salta",
+    "continue": "Continua"
+  },
+  "monitor": {
+    "radar": "Radar",
+    "list": "Lista",
+    "live": "live",
+    "noTransits": "Nessun transito imminente",
+    "searching": "Ricerca in corso...",
+    "transitAlert": "{callsign} → {target} tra",
+    "moon": "Luna",
+    "sun": "Sole",
+    "angularError": "Scarto ±{deg}°",
+    "wakeLock": "Schermo acceso",
+    "aircraft": "{count} aerei nel raggio"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "radius": "Raggio di ricerca",
+    "radiusUnit": "km",
+    "margin": "Margine angolare",
+    "leadTime": "Anticipo notifica",
+    "leadUnit": "min",
+    "provider": "Provider dati",
+    "providerAuto": "Auto (3 fallback)",
+    "save": "Salva",
+    "saved": "Salvato!"
+  },
+  "guide": {
+    "title": "Come funziona",
+    "radar": { "title": "Il Radar", "desc": "Tu sei al centro. Luna e Sole sono punti fissi nel cielo. Gli aerei si muovono — in verde se in rotta di transito." },
+    "radius": { "title": "Raggio di ricerca", "desc": "Quanti km intorno a te interroghiamo per trovare aerei. 25 km è il valore ottimale per non avere troppo rumore." },
+    "margin": { "title": "Margine angolare", "desc": "La tolleranza per considerare un aereo 'in transito'. Luna e Sole misurano ~0.5° di diametro. Con ±0.5° catturi solo i transiti veri sul disco." },
+    "notifications": { "title": "Notifiche", "desc": "Installa l'app e abilita le notifiche per ricevere avvisi anche con il telefono in tasca." }
+  },
+  "nav": {
+    "monitor": "Monitor",
+    "settings": "Impostazioni",
+    "guide": "Guida"
+  },
+  "errors": {
+    "gpsRequired": "GPS richiesto per il monitoraggio",
+    "noProvider": "Nessun provider disponibile. Riprova."
+  }
+}

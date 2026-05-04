@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "SolarMoon",
+    "tagline": "Capture the perfect moment"
+  },
+  "login": {
+    "title": "Sign in",
+    "emailPlaceholder": "your@email.com",
+    "submit": "Send Magic Link",
+    "hint": "No password required — you'll receive a link by email",
+    "sent": "Link sent! Check your inbox.",
+    "error": "Error sending link. Please try again."
+  },
+  "onboarding": {
+    "gps": { "title": "GPS Location", "desc": "Required to calculate transits from your position", "action": "Allow" },
+    "notifications": { "title": "Push Notifications", "desc": "To alert you when a transit is approaching", "action": "Enable" },
+    "install": { "title": "Install App", "desc": "Add to home screen for the best experience", "action": "Install" },
+    "skip": "Skip",
+    "continue": "Continue"
+  },
+  "monitor": {
+    "radar": "Radar",
+    "list": "List",
+    "live": "live",
+    "noTransits": "No imminent transits",
+    "searching": "Searching...",
+    "transitAlert": "{callsign} → {target} in",
+    "moon": "Moon",
+    "sun": "Sun",
+    "angularError": "Offset ±{deg}°",
+    "wakeLock": "Keep screen on",
+    "aircraft": "{count} aircraft in range"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "radius": "Search radius",
+    "radiusUnit": "km",
+    "margin": "Angular margin",
+    "leadTime": "Notification lead time",
+    "leadUnit": "min",
+    "provider": "Data provider",
+    "providerAuto": "Auto (3 fallback)",
+    "save": "Save",
+    "saved": "Saved!"
+  },
+  "guide": {
+    "title": "How it works",
+    "radar": { "title": "The Radar", "desc": "You are at the center. Moon and Sun are fixed points in the sky. Aircraft move — green means on a transit path." },
+    "radius": { "title": "Search radius", "desc": "How many km around you we query for aircraft. 25 km is the optimal value to avoid noise." },
+    "margin": { "title": "Angular margin", "desc": "The tolerance to call an aircraft 'in transit'. Moon and Sun are ~0.5° in diameter. At ±0.5° you only catch true disk transits." },
+    "notifications": { "title": "Notifications", "desc": "Install the app and enable notifications to receive alerts even with your phone in your pocket." }
+  },
+  "nav": {
+    "monitor": "Monitor",
+    "settings": "Settings",
+    "guide": "Guide"
+  },
+  "errors": {
+    "gpsRequired": "GPS required for monitoring",
+    "noProvider": "No provider available. Please try again."
+  }
+}
