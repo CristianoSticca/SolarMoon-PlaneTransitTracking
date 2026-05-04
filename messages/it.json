@@ -21,6 +21,7 @@
   "monitor": {
     "radar": "Radar",
     "list": "Lista",
+    "map": "Mappa",
     "live": "live",
     "noTransits": "Nessun transito imminente",
     "nearbyTitle": "Aerei vicini (nessun transito previsto)",

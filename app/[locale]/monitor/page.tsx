@@ -11,6 +11,7 @@ import { useSessionLog } from '@/hooks/useSessionLog'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { RadarView } from '@/components/monitor/RadarView'
 import { ListView } from '@/components/monitor/ListView'
+import { MapView } from '@/components/monitor/MapView'
 import { TransitAlert } from '@/components/monitor/TransitAlert'
 import { MonitorToggle } from '@/components/monitor/MonitorToggle'
 import { createClient } from '@/lib/supabase/client'
@@ -31,7 +32,7 @@ export default function MonitorPage() {
   const params = useParams()
   const locale = params.locale as string
   const router = useRouter()
-  const [view, setView] = useState<'radar' | 'list'>('radar')
+  const [view, setView] = useState<'radar' | 'list' | 'map'>('radar')
   const [prefs, setPrefs] = useState<UserPrefs | null>(null)
   const { active: wakeLockActive, supported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock()
 
@@ -124,8 +125,15 @@ export default function MonitorPage() {
             lat={lat}
             lon={lon}
           />
-        ) : (
+        ) : view === 'list' ? (
           <ListView events={transitEvents} nearby={nearbyAircraft} />
+        ) : (
+          <MapView
+            aircraft={flightData?.aircraft ?? []}
+            transitEvents={transitEvents}
+            lat={lat}
+            lon={lon}
+          />
         )
       )}
 
