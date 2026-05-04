@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { getMoonPosition, getSunPosition } from '@/lib/astronomy/celestial'
 import type { TransitEvent } from '@/lib/astronomy/transit'
 import type { Aircraft } from '@/lib/flights/types'
@@ -27,7 +27,12 @@ interface Props {
 }
 
 export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
-  const now = useMemo(() => new Date(), [])
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
   const moon = useMemo(() => getMoonPosition(lat, lon, now), [lat, lon, now])
   const sun = useMemo(() => getSunPosition(lat, lon, now), [lat, lon, now])
   const transitIcaos = useMemo(
@@ -37,6 +42,10 @@ export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
 
   const moonXY = moon.altitude > -5 ? azElToXY(moon.azimuth, moon.altitude) : null
   const sunXY = sun.altitude > -5 ? azElToXY(sun.azimuth, sun.altitude) : null
+
+  // When below horizon, show on the outer ring edge to indicate direction
+  const moonEdgeXY = !moonXY ? azElToXY(moon.azimuth, -89) : null
+  const sunEdgeXY = !sunXY ? azElToXY(sun.azimuth, -89) : null
 
   return (
     <div className="flex flex-1 items-center justify-center">
@@ -73,12 +82,24 @@ export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
             <circle cx={moonXY.x} cy={moonXY.y} r={7} fill="url(#moonGrad)" />
           </g>
         )}
+        {moonEdgeXY && (
+          <g opacity="0.3">
+            <circle cx={moonEdgeXY.x} cy={moonEdgeXY.y} r={7} fill="url(#moonGrad)" />
+            <text x={moonEdgeXY.x} y={moonEdgeXY.y + 16} textAnchor="middle" fill="#ffd700" fontSize="7" fontFamily="monospace">▼</text>
+          </g>
+        )}
 
         {/* Sun */}
         {sunXY && (
           <g>
             <circle cx={sunXY.x} cy={sunXY.y} r={16} fill="rgba(251,191,36,0.12)" />
             <circle cx={sunXY.x} cy={sunXY.y} r={6} fill="url(#sunGrad)" />
+          </g>
+        )}
+        {sunEdgeXY && (
+          <g opacity="0.3">
+            <circle cx={sunEdgeXY.x} cy={sunEdgeXY.y} r={6} fill="url(#sunGrad)" />
+            <text x={sunEdgeXY.x} y={sunEdgeXY.y + 15} textAnchor="middle" fill="#fbbf24" fontSize="7" fontFamily="monospace">▼</text>
           </g>
         )}
 
