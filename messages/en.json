@@ -54,7 +54,11 @@
     "notifPrompt": "Not yet requested",
     "notifRequest": "Enable notifications",
     "save": "Save",
-    "saved": "Saved!"
+    "saved": "Saved!",
+    "healthTitle": "Connection status",
+    "healthRun": "Check",
+    "healthUnconfigured": "not configured",
+    "healthError": "error"
   },
   "guide": {
     "title": "How it works",

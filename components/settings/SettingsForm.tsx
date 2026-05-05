@@ -30,6 +30,26 @@ export function SettingsForm({
   const [gpsStatus, setGpsStatus] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown')
   const { state: pushState, request: requestPush } = usePushNotifications()
 
+  type ProviderStatus = 'ok' | 'error' | 'unconfigured'
+  interface ProviderResult { name: string; status: ProviderStatus; ms: number }
+  const [healthResults, setHealthResults] = useState<ProviderResult[] | null>(null)
+  const [healthLoading, setHealthLoading] = useState(false)
+  const [healthCheckedAt, setHealthCheckedAt] = useState<string | null>(null)
+
+  async function runHealthCheck() {
+    setHealthLoading(true)
+    try {
+      const res = await fetch('/api/health')
+      const data = await res.json()
+      setHealthResults(data.providers)
+      setHealthCheckedAt(data.checkedAt)
+    } catch {
+      setHealthResults([])
+    } finally {
+      setHealthLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (!navigator.permissions) {
       // iOS Safari doesn't support permissions.query — probe directly
@@ -191,6 +211,46 @@ export function SettingsForm({
         )}
         {pushState === 'unsupported' && (
           <span className="text-xs text-white/30 text-right">iOS 16.4+{"\n"}+ home screen</span>
+        )}
+      </div>
+
+      {/* Health check */}
+      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-white/70">{t('healthTitle')}</span>
+          <button
+            onClick={runHealthCheck}
+            disabled={healthLoading}
+            className="px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
+          >
+            {healthLoading ? '...' : t('healthRun')}
+          </button>
+        </div>
+        {healthResults && (
+          <div className="space-y-1.5">
+            {healthResults.map(p => (
+              <div key={p.name} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${
+                    p.status === 'ok' ? 'bg-green-400' :
+                    p.status === 'unconfigured' ? 'bg-yellow-400' :
+                    'bg-red-400'
+                  }`} />
+                  <span className="text-white/60 font-mono">{p.name}</span>
+                </div>
+                <span className="text-white/30 font-mono">
+                  {p.status === 'ok' ? `${p.ms}ms` :
+                   p.status === 'unconfigured' ? t('healthUnconfigured') :
+                   t('healthError')}
+                </span>
+              </div>
+            ))}
+            {healthCheckedAt && (
+              <p className="text-white/20 text-xs pt-1">
+                {new Date(healthCheckedAt).toLocaleTimeString()}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

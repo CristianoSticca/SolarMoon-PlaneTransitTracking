@@ -54,7 +54,11 @@
     "notifPrompt": "Non ancora richieste",
     "notifRequest": "Abilita notifiche",
     "save": "Salva",
-    "saved": "Salvato!"
+    "saved": "Salvato!",
+    "healthTitle": "Stato connessioni",
+    "healthRun": "Verifica",
+    "healthUnconfigured": "non configurato",
+    "healthError": "errore"
   },
   "guide": {
     "title": "Come funziona",
