@@ -142,6 +142,7 @@ export default function MonitorPage() {
             transitEvents={transitEvents}
             lat={lat}
             lon={lon}
+            onClose={() => setView('radar')}
           />
         )
       )}

@@ -13,6 +13,7 @@ interface Props {
   transitEvents: TransitEvent[]
   lat: number
   lon: number
+  onClose: () => void
 }
 
 interface Orientation {
@@ -59,12 +60,12 @@ function project(targetAz: number, targetEl: number, orient: Orientation): Scree
   return { x, y }
 }
 
-export function ARView({ aircraft, transitEvents, lat, lon }: Props) {
+export function ARView({ aircraft, transitEvents, lat, lon, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [orient, setOrient] = useState<Orientation>({ alpha: 0, beta: 90, gamma: 0 })
   const [camError, setCamError] = useState<string | null>(null)
-  const [orientError, setOrientError] = useState(false)
+  const [orientState, setOrientState] = useState<'unknown' | 'granted' | 'denied' | 'needs-permission'>('unknown')
   const [popup, setPopup] = useState<MiniPopup | null>(null)
   const [now, setNow] = useState(() => new Date())
 
@@ -96,6 +97,7 @@ export function ARView({ aircraft, transitEvents, lat, lon }: Props) {
   // Device orientation
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
     if (e.alpha == null) return
+    setOrientState('granted')
     setOrient({
       alpha: e.alpha ?? 0,
       beta: e.beta ?? 90,
@@ -103,13 +105,7 @@ export function ARView({ aircraft, transitEvents, lat, lon }: Props) {
     })
   }, [])
 
-  useEffect(() => {
-    if (typeof DeviceOrientationEvent === 'undefined') {
-      setOrientError(true)
-      return
-    }
-
-    // iOS 13+ requires explicit permission
+  const requestOrientation = useCallback(() => {
     const iosRequest = (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission
     if (typeof iosRequest === 'function') {
       iosRequest()
@@ -117,14 +113,26 @@ export function ARView({ aircraft, transitEvents, lat, lon }: Props) {
           if (state === 'granted') {
             window.addEventListener('deviceorientation', handleOrientation)
           } else {
-            setOrientError(true)
+            setOrientState('denied')
           }
         })
-        .catch(() => setOrientError(true))
+        .catch(() => setOrientState('denied'))
+    }
+  }, [handleOrientation])
+
+  useEffect(() => {
+    if (typeof DeviceOrientationEvent === 'undefined') {
+      setOrientState('denied')
+      return
+    }
+    const iosRequest = (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission
+    if (typeof iosRequest === 'function') {
+      // iOS: can't call without user gesture — show button
+      setOrientState('needs-permission')
     } else {
+      // Android / desktop: start immediately
       window.addEventListener('deviceorientation', handleOrientation)
     }
-
     return () => window.removeEventListener('deviceorientation', handleOrientation)
   }, [handleOrientation])
 
@@ -287,19 +295,39 @@ export function ARView({ aircraft, transitEvents, lat, lon }: Props) {
       )}
 
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-black/50 text-white text-lg backdrop-blur-sm"
+          >
+            ‹
+          </button>
           <span className="text-white font-bold text-sm drop-shadow">📷 AR</span>
-          {orientError && (
-            <span className="text-yellow-400 text-xs bg-black/40 rounded-full px-2 py-0.5">
-              Bussola non disponibile
-            </span>
-          )}
         </div>
-        <div className="text-white/40 text-xs bg-black/30 rounded-full px-2 py-1">
-          {acWithPos.length} aerei in vista · {transitLines.length > 0 ? `${transitLines.length} transiti` : 'nessun transito'}
+        <div className="text-white/70 text-xs bg-black/40 rounded-full px-2 py-1">
+          {acWithPos.length} aerei · {transitLines.length > 0 ? `${transitLines.length} transiti` : 'nessun transito'}
         </div>
       </div>
+
+      {/* Orientation permission banner (iOS) */}
+      {orientState === 'needs-permission' && (
+        <div className="absolute top-16 left-0 right-0 flex justify-center px-4">
+          <button
+            onClick={requestOrientation}
+            className="flex items-center gap-2 bg-violet-600/90 backdrop-blur-sm rounded-full px-4 py-2.5 text-white text-sm font-semibold shadow-xl"
+          >
+            🧭 Abilita bussola
+          </button>
+        </div>
+      )}
+      {orientState === 'denied' && (
+        <div className="absolute top-16 left-0 right-0 flex justify-center px-4">
+          <span className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-yellow-400 text-xs">
+            Bussola non disponibile — gli aerei non saranno posizionati correttamente
+          </span>
+        </div>
+      )}
 
       {/* Camera error */}
       {camError && (
