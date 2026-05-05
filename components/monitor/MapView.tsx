@@ -59,31 +59,38 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null)
   const markersRef = useRef<import('leaflet').Marker[]>([])
+  const observerRef = useRef<import('leaflet').CircleMarker | null>(null)
+  const initializedRef = useRef(false)
   const [selected, setSelected] = useState<SelectedAircraft | null>(null)
+  const setSelectedRef = useRef(setSelected)
+  setSelectedRef.current = setSelected
 
   const transitIcaos = new Set(transitEvents.map(e => e.aircraft.icao))
 
+  // Initialize map once
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return
+    if (!mapRef.current || initializedRef.current) return
+    initializedRef.current = true
 
     import('leaflet').then(L => {
-      const map = L.map(mapRef.current!, {
+      if (!mapRef.current || mapInstanceRef.current) return
+
+      const map = L.map(mapRef.current, {
         center: [lat, lon],
         zoom: 9,
         zoomControl: false,
-        attributionControl: false,
+        attributionControl: true,
       })
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '© OpenStreetMap contributors',
       }).addTo(map)
 
       L.control.zoom({ position: 'topright' }).addTo(map)
 
-      // Observer marker
-      L.circleMarker([lat, lon], {
-        radius: 6,
+      observerRef.current = L.circleMarker([lat, lon], {
+        radius: 7,
         fillColor: '#a78bfa',
         fillOpacity: 1,
         color: '#fff',
@@ -96,15 +103,17 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
     return () => {
       mapInstanceRef.current?.remove()
       mapInstanceRef.current = null
+      initializedRef.current = false
     }
-  }, [lat, lon])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentionally empty — initialize once only
 
+  // Update markers only (no map re-init)
   useEffect(() => {
     const map = mapInstanceRef.current
     if (!map) return
 
     import('leaflet').then(L => {
-      // Remove old markers
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
 
@@ -128,7 +137,7 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
         })
 
         const marker = L.marker([ac.lat, ac.lon], { icon })
-          .on('click', () => setSelected({ ac, isTransit }))
+          .on('click', () => setSelectedRef.current({ ac, isTransit }))
           .addTo(map)
 
         markersRef.current.push(marker)
@@ -137,11 +146,12 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
   }, [aircraft, transitEvents])
 
   return (
-    <div className="relative flex-1 rounded-xl overflow-hidden">
-      <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
+    <div className="relative flex-1 rounded-xl overflow-hidden" style={{ minHeight: '400px' }}>
+      <div ref={mapRef} className="absolute inset-0" />
       {selected && (
         <AircraftPanel selected={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   )
 }
+
