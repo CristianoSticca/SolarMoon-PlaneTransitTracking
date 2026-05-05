@@ -14,6 +14,6 @@ export interface Aircraft {
 
 export interface FlightApiResponse {
   aircraft: Aircraft[]
-  provider: 'adsb-one' | 'airplanes-live' | 'opensky'
+  provider: 'airplanes-live' | 'opensky'
   timestamp: number
 }

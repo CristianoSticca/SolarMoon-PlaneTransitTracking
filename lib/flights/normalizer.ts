@@ -1,23 +1,5 @@
 import type { Aircraft } from './types'
 
-export function normalizeAdsbOne(raw: Record<string, unknown>): Aircraft | null {
-  if (raw.lat == null || raw.lon == null) return null
-  const altRaw = raw.alt_baro
-  return {
-    icao: String(raw.hex ?? '').toUpperCase(),
-    callsign: String(raw.flight ?? '').trim(),
-    lat: Number(raw.lat),
-    lon: Number(raw.lon),
-    altitudeFt: typeof altRaw === 'number' ? altRaw : 0,
-    heading: Number(raw.track ?? 0),
-    speedKnots: Number(raw.gs ?? 0),
-    registration: raw.r ? String(raw.r) : undefined,
-    aircraftType: raw.t ? String(raw.t) : undefined,
-    squawk: raw.squawk ? String(raw.squawk) : undefined,
-    verticalRateFpm: raw.baro_rate != null ? Number(raw.baro_rate) : undefined,
-  }
-}
-
 export function normalizeAirplanesLive(raw: Record<string, unknown>): Aircraft | null {
   if (raw.lat == null || raw.lon == null) return null
   const altRaw = raw.alt_baro ?? raw.alt_geom

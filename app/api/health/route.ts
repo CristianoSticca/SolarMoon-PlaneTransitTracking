@@ -22,9 +22,6 @@ export async function GET() {
     checkProvider('Airplanes.live', `https://api.airplanes.live/v2/point/${lat}/${lon}/${nm}`),
   ])
 
-  // ADSB-One blocks server-side requests (Cloudflare 403/526) — excluded from chain
-  const ao: { name: string; status: Status; ms: number } = { name: 'ADSB-One', status: 'unconfigured', ms: 0 }
-
   const airlabsConfigured = !!process.env.AIRLABS_API_KEY
   let airlabs: { name: string; status: Status; ms: number }
   if (!airlabsConfigured) {
@@ -43,7 +40,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    providers: [ap, ao, airlabs],
+    providers: [ap, airlabs],
     checkedAt: new Date().toISOString(),
   })
 }

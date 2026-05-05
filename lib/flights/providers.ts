@@ -1,5 +1,5 @@
 import type { Aircraft, FlightApiResponse } from './types'
-import { normalizeAdsbOne, normalizeAirplanesLive, normalizeOpenSky } from './normalizer'
+import { normalizeAirplanesLive, normalizeOpenSky } from './normalizer'
 
 const TIMEOUT_MS = 8000
 const KM_TO_NM = 0.539957
@@ -12,15 +12,6 @@ async function fetchWithTimeout(url: string, options?: RequestInit): Promise<Res
   } finally {
     clearTimeout(timer)
   }
-}
-
-export async function fetchAdsbOne(lat: number, lon: number, radiusKm: number): Promise<Aircraft[]> {
-  const radiusNm = Math.round(radiusKm * KM_TO_NM)
-  const url = `https://opendata.adsb.one/v2/point/${lat}/${lon}/${radiusNm}`
-  const res = await fetchWithTimeout(url)
-  if (!res.ok) throw new Error(`ADSB-One HTTP ${res.status}`)
-  const data = await res.json()
-  return (data.ac ?? []).map(normalizeAdsbOne).filter(Boolean) as Aircraft[]
 }
 
 export async function fetchAirplanesLive(lat: number, lon: number, radiusKm: number): Promise<Aircraft[]> {
