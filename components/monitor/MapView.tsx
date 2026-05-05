@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import type { Aircraft } from '@/lib/flights/types'
 import type { TransitEvent } from '@/lib/astronomy/transit'
 
@@ -124,6 +124,36 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
 
   const transitIcaos = new Set(transitEvents.map(e => e.aircraft.icao))
 
+  const [mapAircraft, setMapAircraft] = useState<Aircraft[]>([])
+  const fetchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fetchControllerRef = useRef<AbortController | null>(null)
+
+  const fetchForBounds = useCallback((map: import('leaflet').Map) => {
+    if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current)
+    fetchDebounceRef.current = setTimeout(() => {
+      const bounds = map.getBounds()
+      const center = bounds.getCenter()
+      const ne = bounds.getNorthEast()
+      const latDiff = Math.abs(ne.lat - center.lat)
+      const lonDiff = Math.abs(ne.lng - center.lng)
+      const cosLat = Math.cos(center.lat * Math.PI / 180)
+      const radiusKm = Math.min(100, Math.ceil(
+        Math.sqrt((latDiff * 111) ** 2 + (lonDiff * 111 * cosLat) ** 2)
+      ))
+      fetchControllerRef.current?.abort()
+      fetchControllerRef.current = new AbortController()
+      fetch(`/api/flights?lat=${center.lat.toFixed(4)}&lon=${center.lng.toFixed(4)}&radius=${radiusKm}`, {
+        signal: fetchControllerRef.current.signal,
+      })
+        .then(r => r.json())
+        .then(data => { if (data?.aircraft) setMapAircraft(data.aircraft) })
+        .catch(() => {})
+    }, 600)
+  }, [])
+
+  const fetchForBoundsRef = useRef(fetchForBounds)
+  fetchForBoundsRef.current = fetchForBounds
+
   // Initialize map once
   useEffect(() => {
     if (!mapRef.current || initializedRef.current) return
@@ -155,6 +185,9 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
       }).addTo(map)
 
       mapInstanceRef.current = map
+
+      map.on('moveend zoomend', () => fetchForBoundsRef.current(map))
+      fetchForBoundsRef.current(map)
     })
 
     return () => {
@@ -174,10 +207,13 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
 
-      aircraft.forEach(ac => {
+      const propIcaos = new Set(aircraft.map(ac => ac.icao))
+      const displayAircraft = [...aircraft, ...mapAircraft.filter(ac => !propIcaos.has(ac.icao))]
+
+      displayAircraft.forEach(ac => {
         if (ac.altitudeFt < 1000) return
         const isTransit = transitIcaos.has(ac.icao)
-        const color = isTransit ? '#4ade80' : '#94a3b8'
+        const color = isTransit ? '#4ade80' : '#facc15'
 
         const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="-16 -16 32 32">
           <g transform="rotate(${ac.heading})">
@@ -201,7 +237,7 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
         markersRef.current.push(marker)
       })
     })
-  }, [aircraft, transitEvents])
+  }, [aircraft, transitEvents, mapAircraft])
 
   return (
     <div className="relative flex-1 rounded-xl overflow-hidden" style={{ minHeight: '400px' }}>
