@@ -11,6 +11,17 @@ interface Props {
   lon: number
 }
 
+interface FlightDetails {
+  airline: string | null
+  airlineName: string | null
+  depIata: string | null
+  depCity: string | null
+  arrIata: string | null
+  arrCity: string | null
+  status: string | null
+  aircraftIcao: string | null
+}
+
 interface SelectedAircraft {
   ac: Aircraft
   isTransit: boolean
@@ -18,12 +29,25 @@ interface SelectedAircraft {
 
 function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onClose: () => void }) {
   const { ac, isTransit } = selected
+  const [details, setDetails] = useState<FlightDetails | null>(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
+
+  useEffect(() => {
+    if (!ac.callsign) return
+    setDetails(null)
+    setLoadingDetails(true)
+    fetch(`/api/flight-details?callsign=${encodeURIComponent(ac.callsign)}`)
+      .then(r => r.json())
+      .then(d => setDetails(d))
+      .catch(() => setDetails(null))
+      .finally(() => setLoadingDetails(false))
+  }, [ac.callsign])
 
   const rows = [
     { label: 'Volo', value: ac.callsign || '—' },
     { label: 'ICAO', value: ac.icao },
     ac.registration ? { label: 'Registrazione', value: ac.registration } : null,
-    ac.aircraftType ? { label: 'Tipo aereo', value: ac.aircraftType } : null,
+    (details?.aircraftIcao || ac.aircraftType) ? { label: 'Tipo aereo', value: details?.aircraftIcao ?? ac.aircraftType ?? '' } : null,
     { label: 'Altitudine', value: `${ac.altitudeFt.toLocaleString()} ft` },
     { label: 'Velocità', value: `${ac.speedKnots} kt` },
     { label: 'Heading', value: `${ac.heading}°` },
@@ -37,17 +61,45 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
   ].filter(Boolean) as { label: string; value: string }[]
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl border-t border-white/10 bg-[#0f0c29]/95 backdrop-blur-md p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl border-t border-white/10 bg-[#0f0c29]/95 backdrop-blur-md p-5 space-y-3 max-h-[65vh] overflow-y-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-lg font-bold ${isTransit ? 'text-green-400' : 'text-white'}`}>
             ✈ {ac.callsign || ac.icao}
           </span>
-          {ac.aircraftType && <span className="text-xs text-white/40 font-mono">{ac.aircraftType}</span>}
+          {details?.airlineName && <span className="text-xs text-white/50">{details.airlineName}</span>}
           {isTransit && <span className="text-xs bg-green-400/20 text-green-400 px-2 py-0.5 rounded-full">TRANSITO</span>}
         </div>
         <button onClick={onClose} className="text-white/40 hover:text-white text-xl leading-none shrink-0">✕</button>
       </div>
+
+      {/* Route */}
+      {loadingDetails && (
+        <div className="text-white/30 text-xs animate-pulse">Caricamento dettagli volo...</div>
+      )}
+      {details && (details.depCity || details.arrCity) && (
+        <div className="rounded-xl bg-violet-600/15 border border-violet-400/20 px-4 py-3 flex items-center justify-between">
+          <div className="text-center">
+            <div className="text-white font-bold text-sm">{details.depIata ?? '—'}</div>
+            <div className="text-white/50 text-xs">{details.depCity ?? ''}</div>
+          </div>
+          <div className="text-white/30 text-lg">✈</div>
+          <div className="text-center">
+            <div className="text-white font-bold text-sm">{details.arrIata ?? '—'}</div>
+            <div className="text-white/50 text-xs">{details.arrCity ?? ''}</div>
+          </div>
+          {details.status && (
+            <div className={`text-xs px-2 py-1 rounded-full font-semibold ${
+              details.status === 'en-route' ? 'bg-green-400/20 text-green-400' :
+              details.status === 'landed' ? 'bg-blue-400/20 text-blue-400' :
+              'bg-white/10 text-white/50'
+            }`}>{details.status}</div>
+          )}
+        </div>
+      )}
+
+      {/* Tech details */}
       <div className="grid grid-cols-2 gap-2 text-sm">
         {rows.map(({ label, value }) => (
           <div key={label} className={`rounded-lg bg-white/5 px-3 py-2 ${label === 'Posizione' ? 'col-span-2' : ''}`}>
