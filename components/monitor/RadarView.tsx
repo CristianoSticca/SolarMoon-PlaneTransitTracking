@@ -75,31 +75,61 @@ export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
           <text key={label} x={x} y={y} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="9" fontFamily="monospace">{label}</text>
         ))}
 
-        {/* Moon */}
+        {/* Moon — crescent shape via evenodd compound path */}
         {moonXY && (
           <g>
-            <circle cx={moonXY.x} cy={moonXY.y} r={16} fill="rgba(255,215,0,0.12)" />
-            <circle cx={moonXY.x} cy={moonXY.y} r={7} fill="url(#moonGrad)" />
+            <circle cx={moonXY.x} cy={moonXY.y} r={16} fill="rgba(255,215,0,0.10)" />
+            <path
+              transform={`translate(${moonXY.x},${moonXY.y})`}
+              d="M0,-7 A7,7 0 1,1 0,7 A7,7 0 1,1 0,-7 M-3,-5 A5,5 0 1,1 -3,5 A5,5 0 1,1 -3,-5"
+              fill="#ffd700"
+              fillRule="evenodd"
+            />
           </g>
         )}
         {moonEdgeXY && (
           <g opacity="0.3">
-            <circle cx={moonEdgeXY.x} cy={moonEdgeXY.y} r={7} fill="url(#moonGrad)" />
+            <path
+              transform={`translate(${moonEdgeXY.x},${moonEdgeXY.y})`}
+              d="M0,-7 A7,7 0 1,1 0,7 A7,7 0 1,1 0,-7 M-3,-5 A5,5 0 1,1 -3,5 A5,5 0 1,1 -3,-5"
+              fill="#ffd700"
+              fillRule="evenodd"
+            />
             <text x={moonEdgeXY.x} y={moonEdgeXY.y + 16} textAnchor="middle" fill="#ffd700" fontSize="7" fontFamily="monospace">▼</text>
           </g>
         )}
 
-        {/* Sun */}
+        {/* Sun — circle + 8 rays */}
         {sunXY && (
-          <g>
-            <circle cx={sunXY.x} cy={sunXY.y} r={16} fill="rgba(251,191,36,0.12)" />
-            <circle cx={sunXY.x} cy={sunXY.y} r={6} fill="url(#sunGrad)" />
+          <g transform={`translate(${sunXY.x},${sunXY.y})`}>
+            <circle r={18} fill="rgba(251,191,36,0.08)" />
+            {[0,45,90,135,180,225,270,315].map(deg => {
+              const rad = deg * Math.PI / 180
+              return (
+                <line key={deg}
+                  x1={Math.cos(rad)*8.5} y1={Math.sin(rad)*8.5}
+                  x2={Math.cos(rad)*12} y2={Math.sin(rad)*12}
+                  stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round"
+                />
+              )
+            })}
+            <circle r={6} fill="url(#sunGrad)" />
           </g>
         )}
         {sunEdgeXY && (
-          <g opacity="0.3">
-            <circle cx={sunEdgeXY.x} cy={sunEdgeXY.y} r={6} fill="url(#sunGrad)" />
-            <text x={sunEdgeXY.x} y={sunEdgeXY.y + 15} textAnchor="middle" fill="#fbbf24" fontSize="7" fontFamily="monospace">▼</text>
+          <g opacity="0.3" transform={`translate(${sunEdgeXY.x},${sunEdgeXY.y})`}>
+            {[0,45,90,135,180,225,270,315].map(deg => {
+              const rad = deg * Math.PI / 180
+              return (
+                <line key={deg}
+                  x1={Math.cos(rad)*8.5} y1={Math.sin(rad)*8.5}
+                  x2={Math.cos(rad)*12} y2={Math.sin(rad)*12}
+                  stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round"
+                />
+              )
+            })}
+            <circle r={6} fill="url(#sunGrad)" />
+            <text x={0} y={20} textAnchor="middle" fill="#fbbf24" fontSize="7" fontFamily="monospace">▼</text>
           </g>
         )}
 
@@ -117,9 +147,9 @@ export function RadarView({ aircraft, transitEvents, lat, lon }: Props) {
           return (
             <g key={ac.icao} transform={`translate(${x},${y}) rotate(${ac.heading})`}>
               {isTransit && <circle cx={0} cy={0} r={13} fill="none" stroke="#4ade80" strokeWidth="1" opacity="0.5" />}
-              {/* Airplane shape: body + wings + tail */}
+              {/* FR24-style airplane silhouette: fuselage + swept wings + tail fins */}
               <path
-                d="M0,-7 L1.5,-2 L5,0 L1.5,1 L1,5 L0,4 L-1,5 L-1.5,1 L-5,0 L-1.5,-2 Z"
+                d="M0,-8 C0.9,-8 1.5,-5 1.5,-2 L8,2.5 L7.5,4 L1.5,2 L1.2,5.5 L3,6.5 L2.8,7.5 L0,7 L-2.8,7.5 L-3,6.5 L-1.2,5.5 L-1.5,2 L-7.5,4 L-8,2.5 L-1.5,-2 C-1.5,-5 -0.9,-8 0,-8 Z"
                 fill={color}
                 opacity={isTransit ? 1 : 0.7}
               />

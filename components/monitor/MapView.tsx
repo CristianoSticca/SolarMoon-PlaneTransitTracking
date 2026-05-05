@@ -181,9 +181,9 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
 
         const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="-16 -16 32 32">
           <g transform="rotate(${ac.heading})">
-            <path d="M0,-10 L2,-3 L8,0 L2,2 L1.5,8 L0,6 L-1.5,8 L-2,2 L-8,0 L-2,-3 Z"
-              fill="${color}" stroke="${isTransit ? '#fff' : 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
-            ${isTransit ? `<circle cx="0" cy="0" r="13" fill="none" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>` : ''}
+            ${isTransit ? '<circle cx="0" cy="0" r="14" fill="none" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>' : ''}
+            <path d="M0,-13 C1.5,-13 2.5,-8 2.5,-3 L13,4 L12,6 L2.5,3 L2,9 L5,10.5 L4.5,12 L0,11 L-4.5,12 L-5,10.5 L-2,9 L-2.5,3 L-12,6 L-13,4 L-2.5,-3 C-2.5,-8 -1.5,-13 0,-13 Z"
+              fill="${color}" stroke="rgba(0,0,0,0.35)" stroke-width="0.8"/>
           </g>
         </svg>`
 
