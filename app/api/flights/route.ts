@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {  const { searchParams } = req.next
   if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
     return NextResponse.json({ error: 'Invalid coordinates' }, { status: 400 })
   }
-  if (radius < 1 || radius > 100) {
-    return NextResponse.json({ error: 'Radius must be 1–100 km' }, { status: 400 })
+  if (radius < 1 || radius > 450) {
+    return NextResponse.json({ error: 'Radius must be 1–450 km' }, { status: 400 })
   }
 
   try {

@@ -16,7 +16,7 @@ async function fetchWithTimeout(url: string, options?: RequestInit): Promise<Res
 
 export async function fetchAdsbOne(lat: number, lon: number, radiusKm: number): Promise<Aircraft[]> {
   const radiusNm = Math.round(radiusKm * KM_TO_NM)
-  const url = `https://api.adsb.one/v2/point/${lat}/${lon}/${radiusNm}`
+  const url = `https://opendata.adsb.one/v2/point/${lat}/${lon}/${radiusNm}`
   const res = await fetchWithTimeout(url)
   if (!res.ok) throw new Error(`ADSB-One HTTP ${res.status}`)
   const data = await res.json()

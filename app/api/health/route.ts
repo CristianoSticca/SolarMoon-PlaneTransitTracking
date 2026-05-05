@@ -20,7 +20,7 @@ export async function GET() {
 
   const [ap, ao] = await Promise.all([
     checkProvider('Airplanes.live', `https://api.airplanes.live/v2/point/${lat}/${lon}/${nm}`),
-    checkProvider('ADSB-One', `https://opendata.adsb.one/v2/point/${lat}/${lon}/${nm}`),
+    checkProvider('ADSB-One', `https://opendata.adsb.one/v2/point/${lat}/${lon}/${nm}`),  // same URL as providers.ts
   ])
 
   const airlabsConfigured = !!process.env.AIRLABS_API_KEY

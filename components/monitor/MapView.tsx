@@ -137,7 +137,7 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
       const latDiff = Math.abs(ne.lat - center.lat)
       const lonDiff = Math.abs(ne.lng - center.lng)
       const cosLat = Math.cos(center.lat * Math.PI / 180)
-      const radiusKm = Math.min(100, Math.ceil(
+      const radiusKm = Math.min(450, Math.ceil(
         Math.sqrt((latDiff * 111) ** 2 + (lonDiff * 111 * cosLat) ** 2)
       ))
       fetchControllerRef.current?.abort()
