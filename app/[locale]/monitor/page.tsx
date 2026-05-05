@@ -13,6 +13,7 @@ import { RadarView } from '@/components/monitor/RadarView'
 import { ListView } from '@/components/monitor/ListView'
 import dynamic from 'next/dynamic'
 const MapView = dynamic(() => import('@/components/monitor/MapView').then(m => m.MapView), { ssr: false })
+const ARView = dynamic(() => import('@/components/monitor/ARView').then(m => m.ARView), { ssr: false })
 import { TransitAlert } from '@/components/monitor/TransitAlert'
 import { MonitorToggle } from '@/components/monitor/MonitorToggle'
 import { createClient } from '@/lib/supabase/client'
@@ -33,7 +34,7 @@ export default function MonitorPage() {
   const params = useParams()
   const locale = params.locale as string
   const router = useRouter()
-  const [view, setView] = useState<'radar' | 'list' | 'map'>('radar')
+  const [view, setView] = useState<'radar' | 'list' | 'map' | 'ar'>('radar')
   const [prefs, setPrefs] = useState<UserPrefs | null>(null)
   const { active: wakeLockActive, supported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock()
 
@@ -128,8 +129,15 @@ export default function MonitorPage() {
           />
         ) : view === 'list' ? (
           <ListView events={transitEvents} nearby={nearbyAircraft} />
-        ) : (
+        ) : view === 'map' ? (
           <MapView
+            aircraft={flightData?.aircraft ?? []}
+            transitEvents={transitEvents}
+            lat={lat}
+            lon={lon}
+          />
+        ) : (
+          <ARView
             aircraft={flightData?.aircraft ?? []}
             transitEvents={transitEvents}
             lat={lat}

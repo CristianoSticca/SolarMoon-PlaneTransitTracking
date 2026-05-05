@@ -22,6 +22,7 @@
     "radar": "Radar",
     "list": "List",
     "map": "Map",
+    "ar": "AR",
     "live": "live",
     "noTransits": "No imminent transits",
     "nearbyTitle": "Nearby aircraft (no transit predicted)",

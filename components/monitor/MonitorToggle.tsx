@@ -2,14 +2,14 @@
 
 import { useTranslations } from 'next-intl'
 
-type View = 'radar' | 'list' | 'map'
+type View = 'radar' | 'list' | 'map' | 'ar'
 
 export function MonitorToggle({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   const t = useTranslations('monitor')
 
   return (
     <div className="flex rounded-full bg-white/8 p-1 gap-1">
-      {(['radar', 'list', 'map'] as View[]).map(v => (
+      {(['radar', 'list', 'map', 'ar'] as View[]).map(v => (
         <button
           key={v}
           onClick={() => onChange(v)}
@@ -19,7 +19,7 @@ export function MonitorToggle({ view, onChange }: { view: View; onChange: (v: Vi
               : 'text-white/40 hover:text-white/70'
           }`}
         >
-          {v === 'radar' ? `📡 ${t('radar')}` : v === 'list' ? `☰ ${t('list')}` : `🗺️ ${t('map')}`}
+          {v === 'radar' ? `📡 ${t('radar')}` : v === 'list' ? `☰ ${t('list')}` : v === 'map' ? `🗺️ ${t('map')}` : `📷 ${t('ar')}`}
         </button>
       ))}
     </div>
