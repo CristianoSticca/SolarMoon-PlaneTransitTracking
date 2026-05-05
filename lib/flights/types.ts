@@ -6,6 +6,10 @@ export interface Aircraft {
   altitudeFt: number
   heading: number      // degrees from north
   speedKnots: number
+  registration?: string
+  aircraftType?: string
+  squawk?: string
+  verticalRateFpm?: number
 }
 
 export interface FlightApiResponse {

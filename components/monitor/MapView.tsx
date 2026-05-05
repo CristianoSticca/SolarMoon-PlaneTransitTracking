@@ -18,38 +18,43 @@ interface SelectedAircraft {
 
 function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onClose: () => void }) {
   const { ac, isTransit } = selected
+
+  const rows = [
+    { label: 'Volo', value: ac.callsign || '—' },
+    { label: 'ICAO', value: ac.icao },
+    ac.registration ? { label: 'Registrazione', value: ac.registration } : null,
+    ac.aircraftType ? { label: 'Tipo aereo', value: ac.aircraftType } : null,
+    { label: 'Altitudine', value: `${ac.altitudeFt.toLocaleString()} ft` },
+    { label: 'Velocità', value: `${ac.speedKnots} kt` },
+    { label: 'Heading', value: `${ac.heading}°` },
+    ac.verticalRateFpm != null ? {
+      label: 'Vario',
+      value: ac.verticalRateFpm > 64 ? `▲ ${ac.verticalRateFpm} fpm` :
+             ac.verticalRateFpm < -64 ? `▼ ${Math.abs(ac.verticalRateFpm)} fpm` : '→ livello',
+    } : null,
+    ac.squawk ? { label: 'Squawk', value: ac.squawk } : null,
+    { label: 'Posizione', value: `${ac.lat.toFixed(4)}°, ${ac.lon.toFixed(4)}°` },
+  ].filter(Boolean) as { label: string; value: string }[]
+
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl border-t border-white/10 bg-[#0f0c29]/95 backdrop-blur-md p-5 space-y-3">
+    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl border-t border-white/10 bg-[#0f0c29]/95 backdrop-blur-md p-5 space-y-3 max-h-[60vh] overflow-y-auto">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-lg font-bold ${isTransit ? 'text-green-400' : 'text-white'}`}>
             ✈ {ac.callsign || ac.icao}
           </span>
+          {ac.aircraftType && <span className="text-xs text-white/40 font-mono">{ac.aircraftType}</span>}
           {isTransit && <span className="text-xs bg-green-400/20 text-green-400 px-2 py-0.5 rounded-full">TRANSITO</span>}
         </div>
-        <button onClick={onClose} className="text-white/40 hover:text-white text-xl leading-none">✕</button>
+        <button onClick={onClose} className="text-white/40 hover:text-white text-xl leading-none shrink-0">✕</button>
       </div>
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-lg bg-white/5 px-3 py-2">
-          <div className="text-white/40 text-xs">ICAO</div>
-          <div className="font-mono text-white/80">{ac.icao}</div>
-        </div>
-        <div className="rounded-lg bg-white/5 px-3 py-2">
-          <div className="text-white/40 text-xs">Altitudine</div>
-          <div className="font-mono text-white/80">{ac.altitudeFt.toLocaleString()} ft</div>
-        </div>
-        <div className="rounded-lg bg-white/5 px-3 py-2">
-          <div className="text-white/40 text-xs">Velocità</div>
-          <div className="font-mono text-white/80">{ac.speedKnots} kt</div>
-        </div>
-        <div className="rounded-lg bg-white/5 px-3 py-2">
-          <div className="text-white/40 text-xs">Heading</div>
-          <div className="font-mono text-white/80">{ac.heading}°</div>
-        </div>
-        <div className="rounded-lg bg-white/5 px-3 py-2 col-span-2">
-          <div className="text-white/40 text-xs">Posizione</div>
-          <div className="font-mono text-white/80">{ac.lat.toFixed(4)}°, {ac.lon.toFixed(4)}°</div>
-        </div>
+        {rows.map(({ label, value }) => (
+          <div key={label} className={`rounded-lg bg-white/5 px-3 py-2 ${label === 'Posizione' ? 'col-span-2' : ''}`}>
+            <div className="text-white/40 text-xs">{label}</div>
+            <div className="font-mono text-white/80 text-sm">{value}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -122,18 +127,19 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
         const isTransit = transitIcaos.has(ac.icao)
         const color = isTransit ? '#4ade80' : '#94a3b8'
 
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-12 -12 24 24">
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="-16 -16 32 32">
           <g transform="rotate(${ac.heading})">
-            <path d="M0,-7 L1.5,-2 L5,0 L1.5,1 L1,5 L0,4 L-1,5 L-1.5,1 L-5,0 L-1.5,-2 Z"
-              fill="${color}" stroke="${isTransit ? '#fff' : 'none'}" stroke-width="${isTransit ? 0.5 : 0}"/>
+            <path d="M0,-10 L2,-3 L8,0 L2,2 L1.5,8 L0,6 L-1.5,8 L-2,2 L-8,0 L-2,-3 Z"
+              fill="${color}" stroke="${isTransit ? '#fff' : 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
+            ${isTransit ? `<circle cx="0" cy="0" r="13" fill="none" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>` : ''}
           </g>
         </svg>`
 
         const icon = L.divIcon({
           html: svgIcon,
           className: '',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
         })
 
         const marker = L.marker([ac.lat, ac.lon], { icon })
