@@ -125,6 +125,21 @@ export function GuideContent() {
         desc={t('listReading.desc')}
         visual={<ListExampleDiagram />}
       />
+      <Section
+        icon="🗺️"
+        title={t('mapView.title')}
+        desc={t('mapView.desc')}
+      />
+      <Section
+        icon="📷"
+        title={t('arView.title')}
+        desc={t('arView.desc')}
+      />
+      <Section
+        icon="✈"
+        title={t('flightDetails.title')}
+        desc={t('flightDetails.desc')}
+      />
     </div>
   )
 }

@@ -8,6 +8,121 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 
 ## Features
 
+- **Real-time radar** — compass view with Moon (crescent) and Sun (with rays) as fixed points; FR24-style aircraft silhouettes rotated by heading
+- **List view** — sorted transit countdowns + nearby aircraft with projected minimum separation
+- **Map view** — geographic Leaflet map with FR24-style aircraft icons; panning/zooming triggers new API queries for the visible area (up to 450 km radius); click any aircraft for full details
+- **AR camera view** — live camera feed with aircraft, Moon and Sun overlaid at their real sky positions using GPS + compass + gyroscope
+- **Flight details** — origin, destination, airline name and status via AirLabs API (on demand, per click)
+- **Transit detection** — projects each aircraft's trajectory over 10 minutes, calculates angular separation from Moon/Sun, alerts at first entry into transit zone
+- **Push notifications** — alerts even when the app is in background (requires PWA installation)
+- **2-provider fallback** — Airplanes.live → OpenSky Network, automatic failover
+- **API health check** — built-in panel in Settings to verify provider and AirLabs connectivity
+- **Configurable parameters** — search radius (10–50 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time
+- **Screen wake lock** — keeps display on while monitoring
+- **Bilingual** — Italian and English (switch in settings)
+- **PWA** — installable on Android and iOS (16.4+) via "Add to Home Screen"
+
+---
+
+## Views
+
+| View | Description |
+|---|---|
+| 📡 Radar | SVG compass centered on you. Moon/Sun as distinct icons (crescent/rays). Aircraft as FR24-style silhouettes rotated by heading. Green = transiting. |
+| ☰ Lista | Sorted list of transit countdowns (green) + nearby aircraft with projected min separation (grey). |
+| 🗺️ Mappa | Leaflet map, OSM tiles. Yellow aircraft icons. Fetches aircraft for visible map bounds on zoom/pan (up to 450 km radius). Click for detail panel with AirLabs enrichment. |
+| 📷 AR | Camera feed with aircraft/Moon/Sun overlaid at correct sky positions. Requires compass permission on iOS. Tap aircraft for quick popup. |
+
+---
+
+## How it works
+
+1. Open the app and log in with your email (magic link, no password)
+2. Grant GPS permission
+3. The app queries flight APIs every 20 seconds for aircraft within your search radius
+4. For each aircraft, it projects the trajectory forward in 5-second steps
+5. Angular separation between projected aircraft position and Moon/Sun is calculated
+6. When an aircraft is predicted to transit within your angular margin, a countdown alert appears
+7. A push notification fires when the transit is within your configured lead time
+8. In AR view, your compass + gyroscope determine where the camera is pointing; aircraft/Moon/Sun are rendered at their computed azimuth and elevation
+
+### Key parameters
+
+| Parameter | Default | Description |
+|---|---|---|
+| Search radius | 25 km | Geographic area queried for aircraft |
+| Angular margin | ±0.5° | Detection threshold (Moon/Sun diameter ≈ 0.5°) |
+| Notification lead | 3 min | How far in advance to send push alert |
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 App Router (TypeScript) |
+| Styling | Tailwind CSS v4, glass morphism |
+| Auth | Supabase Auth (magic link) |
+| Database | Supabase (PostgreSQL) |
+| Astronomy | [suncalc](https://github.com/mourner/suncalc) — client-side, no external API |
+| Flight data | Airplanes.live, OpenSky Network (free, no key required) |
+| Flight details | AirLabs API (free tier, on-demand per click) |
+| Map | Leaflet + react-leaflet, OpenStreetMap tiles |
+| AR | `getUserMedia`, `DeviceOrientationEvent`, custom azimuth/elevation projection |
+| PWA / Push | `@ducanh2912/next-pwa`, Web Push API, Service Worker |
+| i18n | next-intl |
+| Analytics | Vercel Analytics |
+| Deploy | Vercel |
+
+---
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Yes | VAPID public key for push notifications |
+| `VAPID_PRIVATE_KEY` | Yes | VAPID private key |
+| `VAPID_EMAIL` | Yes | Email for VAPID contact |
+| `AIRLABS_API_KEY` | Optional | AirLabs API key for origin/destination/airline data |
+
+---
+
+## Local development
+
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- VAPID keys for Web Push
+
+### Setup
+
+```bash
+git clone https://github.com/CristianoSticca/SolarMoon-PlaneTransitTracking.git
+cd SolarMoon-PlaneTransitTracking
+npm install
+```
+
+Create `.env.local` with the variables listed above, then:
+
+```bash
+npx web-push generate-vapid-keys   # generate VAPID keys
+cat supabase/migrations/001_initial.sql  # apply schema in Supabase SQL Editor
+npm run dev
+```
+
+
+**Live:** [transitsky.cristianosticca.com](https://transitsky.cristianosticca.com)
+
+A progressive web app for astrophotographers to detect aircraft transits across the Moon and Sun in near-real-time. Open the app, share your GPS location, and get alerted when a plane is about to cross your celestial target — with enough lead time to prepare and shoot.
+
+---
+
+## Features
+
 - **Real-time radar** — compass view centered on your position, with Moon and Sun as fixed points and aircraft moving toward them
 - **Transit detection** — projects each aircraft's trajectory over 10 minutes, calculates angular separation from Moon/Sun, alerts you at first entry into the transit zone
 - **Push notifications** — alerts even when the app is in background (requires PWA installation)

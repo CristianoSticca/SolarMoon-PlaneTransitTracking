@@ -63,11 +63,14 @@
   },
   "guide": {
     "title": "How it works",
-    "radar": { "title": "The Radar", "desc": "You are at the center. Moon and Sun are fixed points in the sky. Aircraft move — green means on a transit path." },
+    "radar": { "title": "The Radar", "desc": "You are at the center. Moon (crescent) and Sun (with rays) are fixed points in the sky. Aircraft move as FR24-style silhouettes — green if transiting, grey otherwise. If below the horizon they appear faded on the edge with a direction arrow." },
     "radius": { "title": "Search radius", "desc": "How many km around you we query for aircraft. 25 km is the optimal value to avoid noise." },
     "margin": { "title": "Angular margin", "desc": "The tolerance to call an aircraft 'in transit'. Moon and Sun are ~0.5° in diameter. At ±0.5° you only catch true disk transits." },
     "notifications": { "title": "Notifications", "desc": "Install the app and enable notifications to receive alerts even with your phone in your pocket." },
-    "listReading": { "title": "How to read the List", "desc": "The green section shows real transits with a countdown. The grey \"Nearby aircraft\" section shows all other aircraft with two values: \"now\" is the current angular distance from the aircraft to the Moon/Sun; \"min\" is the minimum distance it will reach in the next 10 minutes. If \"min\" drops below your set margin (e.g. 0.5°), the aircraft moves up to green as a transit. The Moon and Sun are about 0.5° in diameter." }
+    "listReading": { "title": "How to read the List", "desc": "The green section shows real transits with a countdown. The grey 'Nearby aircraft' section shows all other aircraft with two values: 'now' is the current angular distance; 'min' is the minimum it will reach in the next 10 minutes. If 'min' drops below your margin, the aircraft moves to green." },
+    "mapView": { "title": "Map View", "desc": "Geographic map showing all aircraft in the visible area. Yellow FR24-style icons — green if transiting. Zoom or pan and the search updates for the new area (up to 450 km). Tap any aircraft for callsign, altitude, speed, type, registration, vertical rate, squawk and — if available — airline, departure and arrival." },
+    "arView": { "title": "AR View", "desc": "Live camera feed with aircraft, Moon and Sun overlaid at their real sky positions. Computed from the aircraft ADS-B GPS + your phone compass + gyroscope — not computer vision. On iOS tap 'Enable compass'. Transiting aircraft show a green dashed line toward their target. Tap an aircraft for a quick callsign and altitude popup." },
+    "flightDetails": { "title": "Flight Details", "desc": "Tap any aircraft on the map or in AR for full ADS-B data: altitude, speed, heading, vertical rate (▲▼), squawk and coordinates. Each field has an 'i' icon with an explanation. If the flight is in the AirLabs database you'll also see airline, departure/arrival airport and flight status." }
   },
   "nav": {
     "monitor": "Monitor",

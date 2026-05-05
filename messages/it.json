@@ -63,11 +63,14 @@
   },
   "guide": {
     "title": "Come funziona",
-    "radar": { "title": "Il Radar", "desc": "Tu sei al centro. Luna e Sole sono punti fissi nel cielo. Gli aerei si muovono — in verde se in rotta di transito." },
+    "radar": { "title": "Il Radar", "desc": "Tu sei al centro. Luna (falce) e Sole (con raggi) sono punti fissi nel cielo. Gli aerei si muovono come silhouette FR24 — verdi se in rotta di transito, grigi altrimenti. Se sotto l'orizzonte, luna e sole appaiono sbiaditi sul bordo con una freccia di direzione." },
     "radius": { "title": "Raggio di ricerca", "desc": "Quanti km intorno a te interroghiamo per trovare aerei. 25 km è il valore ottimale per non avere troppo rumore." },
     "margin": { "title": "Margine angolare", "desc": "La tolleranza per considerare un aereo 'in transito'. Luna e Sole misurano ~0.5° di diametro. Con ±0.5° catturi solo i transiti veri sul disco." },
     "notifications": { "title": "Notifiche", "desc": "Installa l'app e abilita le notifiche per ricevere avvisi anche con il telefono in tasca." },
-    "listReading": { "title": "Come leggere la Lista", "desc": "La sezione verde mostra i transiti reali con countdown. La sezione grigia \"Aerei vicini\" mostra tutti gli altri aerei con due valori: \"ora\" è la distanza angolare attuale dall'aereo alla Luna/Sole; \"min\" è la distanza minima che raggiungerà nei prossimi 10 minuti. Se \"min\" scende sotto il tuo margine impostato (es. 0.5°), l'aereo sale in verde come transito. La Luna e il Sole misurano circa 0.5° di diametro." }
+    "listReading": { "title": "Come leggere la Lista", "desc": "La sezione verde mostra i transiti reali con countdown. La sezione grigia 'Aerei vicini' mostra tutti gli altri aerei con due valori: 'ora' è la distanza angolare attuale; 'min' è la minima che raggiungerà nei prossimi 10 minuti. Se 'min' scende sotto il margine impostato, l'aereo sale in verde." },
+    "mapView": { "title": "Vista Mappa", "desc": "Mappa geografica con tutti gli aerei nell'area visibile. Icone gialle stile FlightRadar24 — verdi se in transito. Zoom o sposta la mappa: la ricerca si aggiorna sull'area visibile (fino a 450 km). Tocca un aereo per vedere callsign, altitudine, velocità, tipo, registrazione, variometro, squawk e — se disponibile — compagnia, partenza e arrivo." },
+    "arView": { "title": "Vista AR", "desc": "Feed live dalla fotocamera con aerei, Luna e Sole sovraimpressi nella posizione reale nel cielo. Calcolata da GPS dell'aereo + bussola + giroscopio — non da visione artificiale. Su iOS tocca 'Abilita bussola'. Gli aerei in transito mostrano una linea verde verso il corpo celeste. Tocca un aereo per callsign e quota." },
+    "flightDetails": { "title": "Dettagli Volo", "desc": "Tocca un aereo nella mappa o in AR per dati ADS-B completi: altitudine, velocità, heading, variometro (▲▼), squawk, coordinate. Ogni campo ha un'icona 'i' con spiegazione. Se il volo è in database AirLabs vedrai anche compagnia, aeroporto di partenza/arrivo e stato del volo." }
   },
   "nav": {
     "monitor": "Monitor",
