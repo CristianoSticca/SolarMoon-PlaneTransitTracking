@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(
-      `https://airlabs.co/api/v9/flight?flight_iata=${encodeURIComponent(callsign)}&api_key=${apiKey}`,
+      `https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(callsign)}&api_key=${apiKey}`,
       { next: { revalidate: 60 } }
     )
     if (!res.ok) throw new Error(`AirLabs HTTP ${res.status}`)

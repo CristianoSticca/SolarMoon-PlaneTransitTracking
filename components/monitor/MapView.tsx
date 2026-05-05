@@ -27,6 +27,36 @@ interface SelectedAircraft {
   isTransit: boolean
 }
 
+const FIELD_INFO: Record<string, string> = {
+  'Volo': 'Callsign ICAO del volo — il codice radio usato dai piloti con il controllo del traffico aereo.',
+  'ICAO': 'Codice esadecimale unico assegnato al transponder dell\'aereo (Mode S). Identifica il velivolo, non il volo.',
+  'Registrazione': 'Targa dell\'aereo, simile alla targa di un\'auto. Es. EI-DPF per un Boeing Ryanair.',
+  'Tipo aereo': 'Codice ICAO del modello. Es. B738 = Boeing 737-800, A320 = Airbus A320.',
+  'Altitudine': 'Altitudine barometrica in piedi sul livello del mare (ft AMSL).',
+  'Velocità': 'Velocità al suolo (ground speed) in nodi. 1 nodo = 1,852 km/h.',
+  'Heading': 'Direzione di volo in gradi rispetto al Nord (0°=N, 90°=E, 180°=S, 270°=W).',
+  'Vario': 'Rateo di salita/discesa in piedi al minuto. ▲ = in salita, ▼ = in discesa, → = crociera.',
+  'Squawk': 'Codice a 4 cifre impostato dal pilota sul transponder. 7700 = emergenza, 7600 = radio failure.',
+  'Posizione': 'Coordinate geografiche dell\'aereo (latitudine, longitudine).',
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <span className="relative inline-flex items-center">
+      <button
+        onClick={e => { e.stopPropagation(); setOpen(v => !v) }}
+        className="ml-1 w-3.5 h-3.5 rounded-full bg-white/10 text-white/30 hover:text-white/70 text-[9px] leading-none flex items-center justify-center"
+      >i</button>
+      {open && (
+        <span className="absolute bottom-5 left-0 z-50 w-52 rounded-lg bg-[#1e1a3a] border border-white/10 px-3 py-2 text-xs text-white/70 shadow-xl">
+          {text}
+        </span>
+      )}
+    </span>
+  )
+}
+
 function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onClose: () => void }) {
   const { ac, isTransit } = selected
   const [details, setDetails] = useState<FlightDetails | null>(null)
@@ -103,7 +133,10 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
       <div className="grid grid-cols-2 gap-2 text-sm">
         {rows.map(({ label, value }) => (
           <div key={label} className={`rounded-lg bg-white/5 px-3 py-2 ${label === 'Posizione' ? 'col-span-2' : ''}`}>
-            <div className="text-white/40 text-xs">{label}</div>
+            <div className="flex items-center text-white/40 text-xs">
+              {label}
+              {FIELD_INFO[label] && <InfoTooltip text={FIELD_INFO[label]} />}
+            </div>
             <div className="font-mono text-white/80 text-sm">{value}</div>
           </div>
         ))}
