@@ -56,7 +56,6 @@ export async function fetchFlightsWithFallback(
     fn: () => Promise<Aircraft[]>
   }> = [
     { name: 'airplanes-live', fn: () => fetchAirplanesLive(lat, lon, radiusKm) },
-    { name: 'adsb-one', fn: () => fetchAdsbOne(lat, lon, radiusKm) },
     { name: 'opensky', fn: () => fetchOpenSky(lat, lon, radiusKm) },
   ]
 

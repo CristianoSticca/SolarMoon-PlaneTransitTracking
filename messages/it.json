@@ -42,7 +42,7 @@
     "leadTime": "Anticipo notifica",
     "leadUnit": "min",
     "provider": "Provider dati",
-    "providerAuto": "Auto (3 fallback)",
+    "providerAuto": "Auto (Airplanes.live + OpenSky)",
     "gpsTitle": "Posizione GPS",
     "gpsGranted": "Attivo",
     "gpsDenied": "Negato — abilita nelle impostazioni di sistema",

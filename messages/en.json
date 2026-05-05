@@ -42,7 +42,7 @@
     "leadTime": "Notification lead time",
     "leadUnit": "min",
     "provider": "Data provider",
-    "providerAuto": "Auto (3 fallback)",
+    "providerAuto": "Auto (Airplanes.live + OpenSky)",
     "gpsTitle": "GPS Location",
     "gpsGranted": "Active",
     "gpsDenied": "Denied — enable in system settings",

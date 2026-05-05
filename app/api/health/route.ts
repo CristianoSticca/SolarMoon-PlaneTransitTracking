@@ -18,10 +18,12 @@ export async function GET() {
   const lon = 12.5
   const nm = 10
 
-  const [ap, ao] = await Promise.all([
+  const [ap] = await Promise.all([
     checkProvider('Airplanes.live', `https://api.airplanes.live/v2/point/${lat}/${lon}/${nm}`),
-    checkProvider('ADSB-One', `https://opendata.adsb.one/v2/point/${lat}/${lon}/${nm}`),  // same URL as providers.ts
   ])
+
+  // ADSB-One blocks server-side requests (Cloudflare 403/526) — excluded from chain
+  const ao: { name: string; status: Status; ms: number } = { name: 'ADSB-One', status: 'unconfigured', ms: 0 }
 
   const airlabsConfigured = !!process.env.AIRLABS_API_KEY
   let airlabs: { name: string; status: Status; ms: number }
