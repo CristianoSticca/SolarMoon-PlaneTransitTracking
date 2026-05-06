@@ -4,9 +4,29 @@ import { useState, useCallback, useEffect } from 'react'
 
 export type PushState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported'
 
+async function saveSubscriptionToSupabase(): Promise<boolean> {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false
+  const registration = await navigator.serviceWorker.ready
+  const existing = await registration.pushManager.getSubscription()
+  const subscription =
+    existing ??
+    (await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    }))
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription }),
+  })
+  return res.ok
+}
+
 export function usePushNotifications(): {
   state: PushState
+  subscribed: boolean
   request: () => Promise<void>
+  resubscribe: () => Promise<void>
   notify: (title: string, body: string) => void
 } {
   const [state, setState] = useState<PushState>(() => {
@@ -17,25 +37,29 @@ export function usePushNotifications(): {
     if (perm === 'denied') return 'denied'
     return 'idle'
   })
+  const [subscribed, setSubscribed] = useState(false)
 
-  // If permission was already granted (previous session), ensure subscription is saved in Supabase
+  // On mount: try to silently re-save existing subscription (no new subscription attempt)
   useEffect(() => {
     if (Notification.permission !== 'granted') return
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
     navigator.serviceWorker.ready.then(async (registration) => {
       const existing = await registration.pushManager.getSubscription()
-      const subscription =
-        existing ??
-        (await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-        }))
-      await fetch('/api/push/subscribe', {
+      if (!existing) return  // no existing subscription — user must click resubscribe
+      const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription }),
+        body: JSON.stringify({ subscription: existing }),
       })
+      if (res.ok) setSubscribed(true)
     }).catch(() => {})
+  }, [])
+
+  const resubscribe = useCallback(async () => {
+    try {
+      const ok = await saveSubscriptionToSupabase()
+      if (ok) setSubscribed(true)
+    } catch {}
   }, [])
 
   const request = useCallback(async () => {
@@ -49,21 +73,8 @@ export function usePushNotifications(): {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready
-      const existing = await registration.pushManager.getSubscription()
-      const subscription =
-        existing ??
-        (await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-        }))
-
-      await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription }),
-      })
-
+      const ok = await saveSubscriptionToSupabase()
+      if (ok) setSubscribed(true)
       setState('granted')
     } catch {
       setState('denied')
@@ -85,5 +96,5 @@ export function usePushNotifications(): {
     []
   )
 
-  return { state, request, notify }
+  return { state, subscribed, request, resubscribe, notify }
 }

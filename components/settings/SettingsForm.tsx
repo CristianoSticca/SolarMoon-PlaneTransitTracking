@@ -29,7 +29,7 @@ export function SettingsForm({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [gpsStatus, setGpsStatus] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown')
-  const { state: pushState, request: requestPush } = usePushNotifications()
+  const { state: pushState, subscribed: pushSubscribed, request: requestPush, resubscribe: resubscribePush } = usePushNotifications()
 
   type ProviderStatus = 'ok' | 'error' | 'unconfigured'
   interface ProviderResult { name: string; status: ProviderStatus; ms: number }
@@ -211,6 +211,11 @@ export function SettingsForm({
           <p className="text-sm text-white/70">{t('notifTitle')}</p>
           <p className="text-xs mt-0.5 text-white/40">
             {pushState === 'granted' && <span className="text-green-400">{t('notifGranted')}</span>}
+            {pushState === 'granted' && !pushSubscribed && (
+              <button onClick={resubscribePush} className="ml-2 text-xs text-violet-400 hover:text-violet-300 underline">
+                Registra dispositivo
+              </button>
+            )}
             {pushState === 'denied' && <span className="text-red-400">{t('notifDenied')}</span>}
             {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
           </p>
