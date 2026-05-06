@@ -24,15 +24,27 @@ export function useFlights({ lat, lon, radiusKm, enabled }: UseFlightsOptions): 
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
+  // Keep latest values in refs so fetchFlights never needs to be recreated
+  const latRef = useRef(lat)
+  const lonRef = useRef(lon)
+  const radiusRef = useRef(radiusKm)
+  const enabledRef = useRef(enabled)
+  latRef.current = lat
+  lonRef.current = lon
+  radiusRef.current = radiusKm
+  enabledRef.current = enabled
+
   const fetchFlights = useCallback(async () => {
-    if (lat == null || lon == null || !enabled) return
+    const curLat = latRef.current
+    const curLon = lonRef.current
+    if (curLat == null || curLon == null || !enabledRef.current) return
     abortRef.current?.abort()
     abortRef.current = new AbortController()
 
     setLoading(true)
     try {
       const res = await fetch(
-        `/api/flights?lat=${lat}&lon=${lon}&radius=${radiusKm}`,
+        `/api/flights?lat=${curLat}&lon=${curLon}&radius=${radiusRef.current}`,
         { signal: abortRef.current.signal }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -46,7 +58,7 @@ export function useFlights({ lat, lon, radiusKm, enabled }: UseFlightsOptions): 
     } finally {
       setLoading(false)
     }
-  }, [lat, lon, radiusKm, enabled])
+  }, []) // stable — reads from refs
 
   useEffect(() => {
     fetchFlights()
@@ -55,7 +67,7 @@ export function useFlights({ lat, lon, radiusKm, enabled }: UseFlightsOptions): 
       clearInterval(id)
       abortRef.current?.abort()
     }
-  }, [fetchFlights])
+  }, [fetchFlights]) // fetchFlights is now stable, runs only once
 
   return { data, error, loading }
 }
