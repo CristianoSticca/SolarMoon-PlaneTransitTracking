@@ -37,6 +37,38 @@ export function SettingsForm({
   const [healthLoading, setHealthLoading] = useState(false)
   const [healthCheckedAt, setHealthCheckedAt] = useState<string | null>(null)
   const [pushTestStatus, setPushTestStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
+  const [registraStatus, setRegistraStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
+  const [registraError, setRegistraError] = useState<string | null>(null)
+
+  async function handleRegistra() {
+    setRegistraStatus('sending')
+    setRegistraError(null)
+    try {
+      if (!('serviceWorker' in navigator)) throw new Error('Service worker non supportato')
+      if (!('PushManager' in window)) throw new Error('PushManager non supportato')
+      const registration = await navigator.serviceWorker.ready
+      let subscription = await registration.pushManager.getSubscription()
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        })
+      }
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? `HTTP ${res.status}`)
+      }
+      setRegistraStatus('ok')
+    } catch (e) {
+      setRegistraStatus('error')
+      setRegistraError(String(e))
+    }
+  }
 
   async function sendTestPush() {
     setPushTestStatus('sending')
@@ -223,18 +255,25 @@ export function SettingsForm({
             {t('notifRequest')}
           </button>
         )}
-        {pushState === 'granted' && !pushSubscribed && (
+        {pushState === 'granted' && registraStatus !== 'ok' && (
           <button
-            onClick={resubscribePush}
-            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 transition-colors"
+            onClick={handleRegistra}
+            disabled={registraStatus === 'sending'}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
           >
-            Registra
+            {registraStatus === 'sending' ? '...' : registraStatus === 'error' ? '✗ Errore' : 'Registra'}
           </button>
+        )}
+        {registraStatus === 'ok' && (
+          <span className="text-xs text-green-400 shrink-0">✓ Registrato</span>
         )}
         {pushState === 'unsupported' && (
           <span className="text-xs text-white/30 text-right">iOS 16.4+{"\n"}+ home screen</span>
         )}
       </div>
+      {registraError && (
+        <p className="text-xs text-red-400 px-1">{registraError}</p>
+      )}
 
       {/* Background push notifications toggle */}
       {pushState === 'granted' && (
