@@ -26,6 +26,7 @@ interface UserPrefs {
   search_radius_km: number
   angular_margin_deg: number
   notification_lead_min: number
+  background_push_enabled: boolean
 }
 
 export default function MonitorPage() {
@@ -42,7 +43,7 @@ export default function MonitorPage() {
   useEffect(() => {
     createClient()
       .from('user_preferences')
-      .select('search_radius_km,angular_margin_deg,notification_lead_min')
+      .select('search_radius_km,angular_margin_deg,notification_lead_min,background_push_enabled')
       .single()
       .then(({ data }) => { if (data) setPrefs(data) })
   }, [])
@@ -50,6 +51,20 @@ export default function MonitorPage() {
   const geo = useGeolocation()
   const lat = geo.status === 'granted' ? geo.lat : null
   const lon = geo.status === 'granted' ? geo.lon : null
+
+  // Save GPS position every 5 min so cron can use it for background push
+  const lastPosSaveRef = useRef(0)
+  useEffect(() => {
+    if (lat == null || lon == null) return
+    const now = Date.now()
+    if (now - lastPosSaveRef.current < 5 * 60 * 1000) return
+    lastPosSaveRef.current = now
+    createClient().from('user_preferences').upsert({
+      last_lat: lat,
+      last_lon: lon,
+      last_seen_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' })
+  }, [lat, lon])
 
   const { data: flightData, loading } = useFlights({
     lat,

@@ -11,6 +11,7 @@ interface Prefs {
   search_radius_km: number
   angular_margin_deg: number
   notification_lead_min: number
+  background_push_enabled: boolean
 }
 
 export function SettingsForm({
@@ -213,6 +214,26 @@ export function SettingsForm({
           <span className="text-xs text-white/30 text-right">iOS 16.4+{"\n"}+ home screen</span>
         )}
       </div>
+
+      {/* Background push notifications toggle */}
+      {pushState === 'granted' && (
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-white/70">{t('bgPushTitle')}</p>
+            <p className="text-xs mt-0.5 text-white/40">{t('bgPushDesc')}</p>
+          </div>
+          <button
+            onClick={() => setPrefs(p => ({ ...p, background_push_enabled: !p.background_push_enabled }))}
+            className={`shrink-0 w-12 h-6 rounded-full transition-colors relative ${
+              prefs.background_push_enabled ? 'bg-violet-600' : 'bg-white/15'
+            }`}
+          >
+            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+              prefs.background_push_enabled ? 'left-7' : 'left-1'
+            }`} />
+          </button>
+        </div>
+      )}
 
       {/* Health check */}
       <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 space-y-3">

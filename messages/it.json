@@ -59,7 +59,9 @@
     "healthTitle": "Stato connessioni",
     "healthRun": "Verifica",
     "healthUnconfigured": "non configurato",
-    "healthError": "errore"
+    "healthError": "errore",
+    "bgPushTitle": "Notifiche in background",
+    "bgPushDesc": "Ricevi avvisi anche con l'app chiusa. Il server controlla ogni minuto."
   },
   "guide": {
     "title": "Come funziona",
