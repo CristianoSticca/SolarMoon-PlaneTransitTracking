@@ -120,7 +120,12 @@ export function GuideContent() {
         desc={t('notifications.desc')}
       />
       <Section
-        icon="📋"
+        icon="�"
+        title={t('bgPush.title')}
+        desc={t('bgPush.desc')}
+      />
+      <Section
+        icon="�📋"
         title={t('listReading.title')}
         desc={t('listReading.desc')}
         visual={<ListExampleDiagram />}

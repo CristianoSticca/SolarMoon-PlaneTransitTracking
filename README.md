@@ -14,10 +14,11 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 - **AR camera view** — live camera feed with aircraft, Moon and Sun overlaid at their real sky positions using GPS + compass + gyroscope
 - **Flight details** — origin, destination, airline name and status via AirLabs API (on demand, per click)
 - **Transit detection** — projects each aircraft's trajectory over 10 minutes, calculates angular separation from Moon/Sun, alerts at first entry into transit zone
-- **Push notifications** — alerts even when the app is in background (requires PWA installation)
+- **Foreground push notifications** — alerts when the app is open in background
+- **Background push notifications** — server-side cron (cron-job.org, every minute) checks transits for opted-in users and sends push even with the app fully closed; kill switch in Settings
 - **2-provider fallback** — Airplanes.live → OpenSky Network, automatic failover
 - **API health check** — built-in panel in Settings to verify provider and AirLabs connectivity
-- **Configurable parameters** — search radius (10–50 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time
+- **Configurable parameters** — search radius (10–450 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time
 - **Screen wake lock** — keeps display on while monitoring
 - **Bilingual** — Italian and English (switch in settings)
 - **PWA** — installable on Android and iOS (16.4+) via "Add to Home Screen"
@@ -46,6 +47,15 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 7. A push notification fires when the transit is within your configured lead time
 8. In AR view, your compass + gyroscope determine where the camera is pointing; aircraft/Moon/Sun are rendered at their computed azimuth and elevation
 
+### Background push (server-side)
+
+When enabled in Settings → "Notifiche in background":
+- The app saves your GPS position to Supabase every 5 minutes
+- An external cron (cron-job.org) calls `/api/cron/transit-check` every minute
+- The cron queries flight data at your last known position, runs transit detection, and sends a push notification if a transit is imminent
+- Works with the app fully closed
+- Disable the toggle at any time — the cron will skip you immediately
+
 ### Key parameters
 
 | Parameter | Default | Description |
@@ -69,9 +79,9 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 | Flight details | AirLabs API (free tier, on-demand per click) |
 | Map | Leaflet + react-leaflet, OpenStreetMap tiles |
 | AR | `getUserMedia`, `DeviceOrientationEvent`, custom azimuth/elevation projection |
-| PWA / Push | `@ducanh2912/next-pwa`, Web Push API, Service Worker |
+| Push (foreground) | Web Push API, `web-push`, Service Worker (`public/sw.js`) |
+| Push (background) | Server-side cron via [cron-job.org](https://cron-job.org), `/api/cron/transit-check` |
 | i18n | next-intl |
-| Analytics | Vercel Analytics |
 | Deploy | Vercel |
 
 ---
@@ -82,10 +92,12 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (used by cron) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Yes | VAPID public key for push notifications |
 | `VAPID_PRIVATE_KEY` | Yes | VAPID private key |
 | `VAPID_EMAIL` | Yes | Email for VAPID contact |
+| `CRON_SECRET` | Yes | Secret to authenticate cron-job.org requests |
+| `NEXT_PUBLIC_APP_URL` | Yes | Full app URL (e.g. `https://transitsky.cristianosticca.com`) |
 | `AIRLABS_API_KEY` | Optional | AirLabs API key for origin/destination/airline data |
 
 ---
@@ -110,106 +122,9 @@ Create `.env.local` with the variables listed above, then:
 
 ```bash
 npx web-push generate-vapid-keys   # generate VAPID keys
-cat supabase/migrations/001_initial.sql  # apply schema in Supabase SQL Editor
-npm run dev
-```
-
-
-**Live:** [transitsky.cristianosticca.com](https://transitsky.cristianosticca.com)
-
-A progressive web app for astrophotographers to detect aircraft transits across the Moon and Sun in near-real-time. Open the app, share your GPS location, and get alerted when a plane is about to cross your celestial target — with enough lead time to prepare and shoot.
-
----
-
-## Features
-
-- **Real-time radar** — compass view centered on your position, with Moon and Sun as fixed points and aircraft moving toward them
-- **Transit detection** — projects each aircraft's trajectory over 10 minutes, calculates angular separation from Moon/Sun, alerts you at first entry into the transit zone
-- **Push notifications** — alerts even when the app is in background (requires PWA installation)
-- **3-provider fallback** — ADSB-One → Airplanes.live → OpenSky Network, automatic failover
-- **Configurable parameters** — search radius (10–50 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time
-- **Screen wake lock** — keeps display on while monitoring
-- **Bilingual** — Italian and English (switch in settings)
-- **PWA** — installable on Android and iOS (16.4+) via "Add to Home Screen"
-
----
-
-## How it works
-
-1. Open the app and log in with your email (magic link, no password)
-2. Grant GPS permission
-3. The app queries flight APIs every 20 seconds for aircraft within your search radius
-4. For each aircraft, it projects the trajectory forward in 5-second steps
-5. Angular separation between the projected aircraft position and Moon/Sun is calculated
-6. When an aircraft is predicted to transit within your angular margin, a countdown alert appears
-7. A push notification fires when the transit is within your configured lead time
-
-### Key parameters
-
-| Parameter | Default | Description |
-|---|---|---|
-| Search radius | 25 km | Geographic area queried for aircraft |
-| Angular margin | ±0.5° | Detection threshold (Moon/Sun diameter ≈ 0.5°) |
-| Notification lead | 3 min | How far in advance to send push alert |
-
----
-
-## Tech stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 App Router (TypeScript) |
-| Styling | Tailwind CSS v4, glass morphism |
-| Auth | Supabase Auth (magic link) |
-| Database | Supabase (PostgreSQL) |
-| Astronomy | [suncalc](https://github.com/mourner/suncalc) — client-side, no external API |
-| Flight data | ADSB-One, Airplanes.live, OpenSky Network (all free) |
-| PWA / Push | `@ducanh2912/next-pwa`, Web Push API, Service Worker |
-| i18n | next-intl |
-| Deploy | Vercel |
-
----
-
-## Local development
-
-### Prerequisites
-
-- Node.js 18+
-- A [Supabase](https://supabase.com) project
-- VAPID keys for Web Push
-
-### Setup
-
-```bash
-git clone https://github.com/CristianoSticca/SolarMoon-PlaneTransitTracking.git
-cd SolarMoon-PlaneTransitTracking
-npm install
-cp .env.local.example .env.local
-```
-
-Fill in `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=your-vapid-public-key
-VAPID_PRIVATE_KEY=your-vapid-private-key
-VAPID_EMAIL=mailto:your@email.com
-```
-
-Generate VAPID keys:
-```bash
-npx web-push generate-vapid-keys
-```
-
-Apply the database schema in the Supabase SQL Editor:
-```bash
+# Apply both migrations in Supabase SQL Editor:
 cat supabase/migrations/001_initial.sql
-```
-
-Run the dev server:
-```bash
+cat supabase/migrations/002_background_push.sql
 npm run dev
 ```
 
@@ -232,13 +147,17 @@ user_preferences (
   language text DEFAULT 'it',
   search_radius_km int DEFAULT 25,
   angular_margin_deg float DEFAULT 0.5,
-  notification_lead_min int DEFAULT 3
+  notification_lead_min int DEFAULT 3,
+  last_lat float,                        -- last known GPS latitude (background push)
+  last_lon float,                        -- last known GPS longitude (background push)
+  last_seen_at timestamptz,              -- last time app was open with GPS active
+  background_push_enabled boolean DEFAULT false
 )
 
 -- Web Push subscriptions
 push_subscriptions (
   id uuid PRIMARY KEY,
-  user_id uuid,
+  user_id uuid UNIQUE,
   subscription jsonb,  -- Web Push subscription object
   device_label text
 )
@@ -252,11 +171,25 @@ Row Level Security is enabled on both tables — users can only read and write t
 
 | Priority | Provider | Auth required | Coverage |
 |---|---|---|---|
-| 1 | [ADSB-One](https://api.adsb.one) | No | Global |
-| 2 | [Airplanes.live](https://airplanes.live) | No | Global |
-| 3 | [OpenSky Network](https://opensky-network.org) | Optional | Excellent in Europe |
+| 1 | [Airplanes.live](https://airplanes.live) | No | Global |
+| 2 | [OpenSky Network](https://opensky-network.org) | Optional | Excellent in Europe |
 
 If a provider fails or times out (2s), the app automatically falls back to the next one. The active provider is shown in the monitor footer.
+
+---
+
+## Background push setup
+
+The background cron is powered by [cron-job.org](https://cron-job.org) (free):
+
+1. Create an account on cron-job.org
+2. **Create cronjob**:
+   - URL: `https://transitsky.cristianosticca.com/api/cron/transit-check`
+   - Schedule: every **1 minute**
+   - Headers: `Authorization` = `Bearer <CRON_SECRET>`
+3. Save and enable
+
+Vercel Hobby plan supports crons but only once per day, so the external cron is required for per-minute execution.
 
 ---
 
@@ -267,12 +200,19 @@ app/
   [locale]/
     login/          Magic link login
     onboarding/     GPS + notifications + install prompt
-    monitor/        Main radar/list screen
-    settings/       User preferences
+    monitor/        Main radar/list/map/AR screen
+    settings/       User preferences + background push toggle
     guide/          How-it-works with visual diagrams
   api/
     flights/        Flight data proxy (rate-limited, auth-gated)
-    push/subscribe/ Web Push subscription endpoint
+    flight-details/ AirLabs enrichment (airline, origin, destination)
+    health/         Provider health check endpoint
+    push/
+      subscribe/    Save Web Push subscription to Supabase
+      send/         Send a push notification via VAPID (internal)
+      test/         Send a test push to the current user
+    cron/
+      transit-check/ Background cron: check transits, send push
 lib/
   astronomy/
     celestial.ts    Moon/Sun position via suncalc
@@ -286,21 +226,26 @@ lib/
     server.ts       Server-side Supabase client
 hooks/
   useGeolocation.ts
-  useFlights.ts         Polls /api/flights every 20s
+  useFlights.ts           Polls /api/flights every 20s
   useTransitDetection.ts
   useWakeLock.ts
-  usePushNotifications.ts
-  useSessionLog.ts      Session log in sessionStorage
+  usePushNotifications.ts  Handles SW registration + subscription
+  useSessionLog.ts
 components/
-  monitor/          RadarView, ListView, TransitAlert, MonitorToggle
+  monitor/          RadarView, ListView, MapView, ARView, TransitAlert, MonitorToggle
   onboarding/       OnboardingSteps
   settings/         SettingsForm
   guide/            GuideContent with SVG diagrams
+public/
+  sw.js             Service Worker (push handler)
+  manifest.json     PWA manifest
 messages/
   it.json           Italian strings
   en.json           English strings
 supabase/
-  migrations/       001_initial.sql
+  migrations/
+    001_initial.sql
+    002_background_push.sql
 ```
 
 ---
@@ -316,18 +261,12 @@ The app is deployed on Vercel with automatic deployments on push to `main`.
 - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 - `VAPID_PRIVATE_KEY`
 - `VAPID_EMAIL`
+- `CRON_SECRET`
+- `NEXT_PUBLIC_APP_URL`
 
 After deploying, add your domain to Supabase → Authentication → URL Configuration as **Site URL** and **Redirect URL**.
 
----
-
-## Roadmap (v2)
-
-- Persistent transit history
-- Server-side 24/7 monitoring (alerts without app open)
-- Aircraft type / airline filters
-- Social sharing of captures
-- Support for ISS and planets
+Set up cron-job.org as described in [Background push setup](#background-push-setup).
 
 ---
 

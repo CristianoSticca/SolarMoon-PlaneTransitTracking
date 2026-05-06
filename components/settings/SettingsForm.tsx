@@ -42,21 +42,16 @@ export function SettingsForm({
 
   async function handleRegistra() {
     setRegistraStatus('sending')
-    setRegistraError('step 1: attendo service worker...')
+    setRegistraError(null)
     try {
       if (!('serviceWorker' in navigator)) throw new Error('Service worker non supportato')
       if (!('PushManager' in window)) throw new Error('PushManager non supportato')
-
       const registration = await Promise.race([
         navigator.serviceWorker.ready,
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout service worker (10s)')), 10000))
       ])
-
-      setRegistraError('step 2: cerco subscription...')
       let subscription = await registration.pushManager.getSubscription()
-
       if (!subscription) {
-        setRegistraError('step 3: creo nuova subscription...')
         subscription = await Promise.race([
           registration.pushManager.subscribe({
             userVisibleOnly: true,
@@ -65,8 +60,6 @@ export function SettingsForm({
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout subscribe (10s)')), 10000))
         ])
       }
-
-      setRegistraError('step 4: salvo su server...')
       const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
