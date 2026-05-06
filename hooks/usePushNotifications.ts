@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export type PushState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported'
 
@@ -17,6 +17,26 @@ export function usePushNotifications(): {
     if (perm === 'denied') return 'denied'
     return 'idle'
   })
+
+  // If permission was already granted (previous session), ensure subscription is saved in Supabase
+  useEffect(() => {
+    if (Notification.permission !== 'granted') return
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+    navigator.serviceWorker.ready.then(async (registration) => {
+      const existing = await registration.pushManager.getSubscription()
+      const subscription =
+        existing ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        }))
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription }),
+      })
+    }).catch(() => {})
+  }, [])
 
   const request = useCallback(async () => {
     if (state === 'unsupported') return
