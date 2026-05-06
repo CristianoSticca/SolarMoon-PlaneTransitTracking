@@ -36,6 +36,19 @@ export function SettingsForm({
   const [healthResults, setHealthResults] = useState<ProviderResult[] | null>(null)
   const [healthLoading, setHealthLoading] = useState(false)
   const [healthCheckedAt, setHealthCheckedAt] = useState<string | null>(null)
+  const [pushTestStatus, setPushTestStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
+
+  async function sendTestPush() {
+    setPushTestStatus('sending')
+    try {
+      const res = await fetch('/api/push/test', { method: 'POST' })
+      setPushTestStatus(res.ok ? 'ok' : 'error')
+    } catch {
+      setPushTestStatus('error')
+    } finally {
+      setTimeout(() => setPushTestStatus('idle'), 3000)
+    }
+  }
 
   async function runHealthCheck() {
     setHealthLoading(true)
@@ -221,6 +234,16 @@ export function SettingsForm({
           <div>
             <p className="text-sm text-white/70">{t('bgPushTitle')}</p>
             <p className="text-xs mt-0.5 text-white/40">{t('bgPushDesc')}</p>
+            <button
+              onClick={sendTestPush}
+              disabled={pushTestStatus === 'sending'}
+              className="mt-1.5 text-xs text-violet-400 hover:text-violet-300 disabled:opacity-50 transition-colors"
+            >
+              {pushTestStatus === 'sending' && '...'}
+              {pushTestStatus === 'ok' && '✓ Inviata!'}
+              {pushTestStatus === 'error' && '✗ Errore'}
+              {pushTestStatus === 'idle' && 'Invia notifica di test'}
+            </button>
           </div>
           <button
             onClick={() => setPrefs(p => ({ ...p, background_push_enabled: !p.background_push_enabled }))}
