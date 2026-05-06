@@ -35,6 +35,13 @@ export default async function LocaleLayout({
             e.preventDefault();
             window.__a2hsEvent = e;
           });
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                console.error('SW registration failed:', err);
+              });
+            });
+          }
         ` }} />
       </body>
     </html>
