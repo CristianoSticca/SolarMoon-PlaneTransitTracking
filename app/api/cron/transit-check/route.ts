@@ -20,18 +20,10 @@ export async function GET(req: NextRequest) {
 
   const staleThreshold = new Date(Date.now() - STALE_MINUTES * 60 * 1000).toISOString()
 
-  // Get users with background push enabled, active subscription, and recent GPS
+  // Get users with background push enabled and recent GPS
   const { data: users, error } = await supabase
     .from('user_preferences')
-    .select(`
-      user_id,
-      last_lat,
-      last_lon,
-      search_radius_km,
-      angular_margin_deg,
-      notification_lead_min,
-      push_subscriptions ( subscription )
-    `)
+    .select('user_id, last_lat, last_lon, search_radius_km, angular_margin_deg, notification_lead_min')
     .eq('background_push_enabled', true)
     .not('last_lat', 'is', null)
     .not('last_lon', 'is', null)
@@ -40,12 +32,28 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!users?.length) return NextResponse.json({ checked: 0 })
 
+  // Fetch push subscriptions separately
+  const userIds = users.map(u => u.user_id)
+  const { data: allSubs, error: subsError } = await supabase
+    .from('push_subscriptions')
+    .select('user_id, subscription')
+    .in('user_id', userIds)
+
+  if (subsError) return NextResponse.json({ error: subsError.message }, { status: 500 })
+
+  const subsByUser = new Map<string, object[]>()
+  for (const s of allSubs ?? []) {
+    const arr = subsByUser.get(s.user_id) ?? []
+    arr.push(s.subscription)
+    subsByUser.set(s.user_id, arr)
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get('host')}`
   let notified = 0
 
   for (const user of users) {
-    const subs = (user.push_subscriptions as { subscription: object }[])
-    if (!subs?.length) continue
+    const subs = subsByUser.get(user.user_id) ?? []
+    if (!subs.length) continue
 
     const lat = user.last_lat as number
     const lon = user.last_lon as number
@@ -74,7 +82,7 @@ export async function GET(req: NextRequest) {
       const title = `✈ ${ev.aircraft.callsign || ev.aircraft.icao} → ${targetLabel}`
       const body = `Transito tra ${Math.ceil(ev.countdown / 60)} min · Scarto ±${ev.minAngularSeparation.toFixed(2)}°`
 
-      for (const { subscription } of subs) {
+      for (const subscription of subs) {
         const res = await fetch(`${baseUrl}/api/push/send`, {
           method: 'POST',
           headers: {
