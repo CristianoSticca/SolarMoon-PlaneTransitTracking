@@ -211,14 +211,14 @@ export function SettingsForm({
           <p className="text-sm text-white/70">{t('notifTitle')}</p>
           <p className="text-xs mt-0.5 text-white/40">
             {pushState === 'granted' && <span className="text-green-400">{t('notifGranted')}</span>}
-            {pushState === 'granted' && !pushSubscribed && (
-              <button onClick={resubscribePush} className="ml-2 text-xs text-violet-400 hover:text-violet-300 underline">
-                Registra dispositivo
-              </button>
-            )}
             {pushState === 'denied' && <span className="text-red-400">{t('notifDenied')}</span>}
             {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
           </p>
+          {pushState === 'granted' && !pushSubscribed && (
+            <button onClick={resubscribePush} className="mt-1 text-xs text-violet-400 hover:text-violet-300 underline">
+              Registra dispositivo
+            </button>
+          )}
         </div>
         {pushState === 'idle' && (
           <button
