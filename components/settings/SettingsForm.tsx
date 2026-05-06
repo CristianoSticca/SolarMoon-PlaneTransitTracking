@@ -214,11 +214,6 @@ export function SettingsForm({
             {pushState === 'denied' && <span className="text-red-400">{t('notifDenied')}</span>}
             {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
           </p>
-          {pushState === 'granted' && !pushSubscribed && (
-            <button onClick={resubscribePush} className="mt-1 text-xs text-violet-400 hover:text-violet-300 underline">
-              Registra dispositivo
-            </button>
-          )}
         </div>
         {pushState === 'idle' && (
           <button
@@ -226,6 +221,14 @@ export function SettingsForm({
             className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
           >
             {t('notifRequest')}
+          </button>
+        )}
+        {pushState === 'granted' && !pushSubscribed && (
+          <button
+            onClick={resubscribePush}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 transition-colors"
+          >
+            Registra
           </button>
         )}
         {pushState === 'unsupported' && (
