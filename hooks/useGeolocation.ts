@@ -26,8 +26,14 @@ export function useGeolocation(): GeolocationState {
         lon: pos.coords.longitude,
         accuracy: pos.coords.accuracy,
       }),
-      err => setState({ status: 'denied', error: err.message }),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      err => {
+        // Only treat PERMISSION_DENIED as permanent — timeout/unavailable are transient
+        if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
+          setState({ status: 'denied', error: err.message })
+        }
+        // else: keep current state (don't flash red on GPS hiccup)
+      },
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 30000 }
     )
 
     return () => navigator.geolocation.clearWatch(watchId)
