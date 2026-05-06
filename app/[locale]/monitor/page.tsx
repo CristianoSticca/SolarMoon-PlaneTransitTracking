@@ -78,6 +78,7 @@ export default function MonitorPage() {
     for (const ev of transitEvents) {
       const key = `${ev.aircraft.icao}-${ev.target}-${ev.contactTimestamp}`
       if (ev.countdown <= leadSec && !notifiedRef.current.has(key)) {
+        if (Notification.permission !== 'granted') continue
         notifiedRef.current.add(key)
         const targetLabel = ev.target === 'moon' ? '🌙 Luna' : '☀️ Sole'
         notify(

@@ -52,7 +52,8 @@ export function usePushNotifications(): {
 
   const notify = useCallback(
     (title: string, body: string) => {
-      if (state !== 'granted') return
+      // Check live permission — state may be stale if granted in a previous session
+      if (Notification.permission !== 'granted') return
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification(title, {
           body,
@@ -61,7 +62,7 @@ export function usePushNotifications(): {
         })
       })
     },
-    [state]
+    []
   )
 
   return { state, request, notify }
