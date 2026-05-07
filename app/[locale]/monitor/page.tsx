@@ -52,12 +52,13 @@ export default function MonitorPage() {
   const lat = geo.status === 'granted' ? geo.lat : null
   const lon = geo.status === 'granted' ? geo.lon : null
 
-  // Save GPS position every 5 min so cron can use it for background push
+  // Save GPS position to Supabase every 5 min for background push cron
   const latRef = useRef(lat)
   const lonRef = useRef(lon)
   latRef.current = lat
   lonRef.current = lon
   useEffect(() => {
+    if (geo.status !== 'granted') return
     function savePos() {
       const currentLat = latRef.current
       const currentLon = lonRef.current
@@ -65,17 +66,20 @@ export default function MonitorPage() {
       const supabase = createClient()
       supabase.auth.getUser().then(({ data }) => {
         if (!data.user) return
-        supabase.from('user_preferences').update({
-          last_lat: currentLat,
-          last_lon: currentLon,
-          last_seen_at: new Date().toISOString(),
-        }).eq('user_id', data.user.id)
+        supabase.from('user_preferences')
+          .update({
+            last_lat: currentLat,
+            last_lon: currentLon,
+            last_seen_at: new Date().toISOString(),
+          })
+          .eq('user_id', data.user.id)
+          .then(({ error }) => { if (error) console.error('GPS save error:', error.message) })
       })
     }
-    savePos() // immediate on mount
+    savePos() // immediate when GPS first becomes granted
     const interval = setInterval(savePos, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [geo.status]) // re-runs when GPS status changes
 
   const { data: flightData, loading } = useFlights({
     lat,
