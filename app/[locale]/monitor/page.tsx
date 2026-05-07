@@ -53,18 +53,29 @@ export default function MonitorPage() {
   const lon = geo.status === 'granted' ? geo.lon : null
 
   // Save GPS position every 5 min so cron can use it for background push
-  const lastPosSaveRef = useRef(0)
+  const latRef = useRef(lat)
+  const lonRef = useRef(lon)
+  latRef.current = lat
+  lonRef.current = lon
   useEffect(() => {
-    if (lat == null || lon == null) return
-    const now = Date.now()
-    if (now - lastPosSaveRef.current < 5 * 60 * 1000) return
-    lastPosSaveRef.current = now
-    createClient().from('user_preferences').upsert({
-      last_lat: lat,
-      last_lon: lon,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' })
-  }, [lat, lon])
+    function savePos() {
+      const currentLat = latRef.current
+      const currentLon = lonRef.current
+      if (currentLat == null || currentLon == null) return
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data }) => {
+        if (!data.user) return
+        supabase.from('user_preferences').update({
+          last_lat: currentLat,
+          last_lon: currentLon,
+          last_seen_at: new Date().toISOString(),
+        }).eq('user_id', data.user.id)
+      })
+    }
+    savePos() // immediate on mount
+    const interval = setInterval(savePos, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const { data: flightData, loading } = useFlights({
     lat,
@@ -91,7 +102,7 @@ export default function MonitorPage() {
     if (!transitEvents.length) return
     const leadSec = (prefs?.notification_lead_min ?? 3) * 60
     for (const ev of transitEvents) {
-      const key = `${ev.aircraft.icao}-${ev.target}-${ev.contactTimestamp}`
+      const key = `${ev.aircraft.icao}-${ev.target}`
       if (ev.countdown <= leadSec && !notifiedRef.current.has(key)) {
         if (Notification.permission !== 'granted') continue
         notifiedRef.current.add(key)

@@ -4,7 +4,7 @@ import { fetchFlightsWithFallback } from '@/lib/flights/providers'
 import { detectTransits } from '@/lib/astronomy/transit'
 import { getMoonPosition, getSunPosition } from '@/lib/astronomy/celestial'
 
-const STALE_MINUTES = 30  // ignore users not seen in last 30 min
+const STALE_MINUTES = 720  // 12 hours — keep checking even with app closed
 
 export async function GET(req: NextRequest) {
   // Verify Vercel cron secret
