@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get('host')}`
+  const force = req.nextUrl.searchParams.get('force') === 'true'
   let notified = 0
 
   for (const user of users) {
@@ -60,6 +61,23 @@ export async function GET(req: NextRequest) {
     const radiusKm = (user.search_radius_km as number) ?? 25
     const marginDeg = (user.angular_margin_deg as number) ?? 0.5
     const leadSec = ((user.notification_lead_min as number) ?? 3) * 60
+
+    // Force mode: send a test push without checking real transits
+    if (force) {
+      for (const subscription of subs) {
+        await fetch(`${baseUrl}/api/push/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-cron-secret': process.env.CRON_SECRET! },
+          body: JSON.stringify({
+            subscription,
+            title: '✅ Test background push',
+            body: 'Il cron funziona correttamente con app chiusa.',
+          }),
+        })
+        notified++
+      }
+      continue
+    }
 
     try {
       const flightData = await fetchFlightsWithFallback(lat, lon, radiusKm)
