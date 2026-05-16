@@ -14,6 +14,29 @@ interface Prefs {
   background_push_enabled: boolean
 }
 
+const cardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 12,
+  padding: '12px 16px',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: '#e8eaf0',
+}
+
+const mutedStyle: React.CSSProperties = {
+  fontSize: 11,
+  color: '#8892a4',
+}
+
+const goldValueStyle: React.CSSProperties = {
+  color: '#e8c848',
+  fontFamily: 'monospace',
+  fontSize: 13,
+}
+
 export function SettingsForm({
   initialPrefs,
   userId,
@@ -132,20 +155,25 @@ export function SettingsForm({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Language */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between">
-        <span className="text-sm text-white/70">{t('language')}</span>
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={labelStyle}>{t('language')}</span>
         <div className="flex gap-2">
           {['it', 'en'].map(l => (
             <button
               key={l}
               onClick={() => setPrefs(p => ({ ...p, language: l }))}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                prefs.language === l
-                  ? 'bg-violet-600 text-white'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 600,
+                transition: 'all 0.15s',
+                background: prefs.language === l ? 'rgba(232,200,72,0.2)' : 'transparent',
+                border: prefs.language === l ? '1px solid #e8c848' : '1px solid transparent',
+                color: prefs.language === l ? '#e8c848' : '#8892a4',
+              }}
             >
               {l.toUpperCase()}
             </button>
@@ -154,12 +182,10 @@ export function SettingsForm({
       </div>
 
       {/* Search radius */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-4">
-        <div className="flex justify-between mb-3">
-          <span className="text-sm text-white/70">{t('radius')}</span>
-          <span className="text-sm font-mono text-violet-400">
-            {prefs.search_radius_km} {t('radiusUnit')}
-          </span>
+      <div style={{ ...cardStyle }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={labelStyle}>{t('radius')}</span>
+          <span style={goldValueStyle}>{prefs.search_radius_km} {t('radiusUnit')}</span>
         </div>
         <input
           type="range"
@@ -168,29 +194,35 @@ export function SettingsForm({
           step={5}
           value={prefs.search_radius_km}
           onChange={e => setPrefs(p => ({ ...p, search_radius_km: Number(e.target.value) }))}
-          className="w-full accent-violet-500"
+          style={{ width: '100%', accentColor: '#e8c848' }}
         />
-        <div className="flex justify-between text-white/20 text-xs mt-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', ...mutedStyle, marginTop: 4 }}>
           <span>10</span><span>50</span>
         </div>
       </div>
 
       {/* Angular margin */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-4">
-        <div className="flex justify-between mb-3">
-          <span className="text-sm text-white/70">{t('margin')}</span>
-          <span className="text-sm font-mono text-violet-400">±{prefs.angular_margin_deg}°</span>
+      <div style={{ ...cardStyle }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={labelStyle}>{t('margin')}</span>
+          <span style={goldValueStyle}>±{prefs.angular_margin_deg}°</span>
         </div>
         <div className="flex gap-2">
           {[0.2, 0.5, 1.5].map(v => (
             <button
               key={v}
               onClick={() => setPrefs(p => ({ ...p, angular_margin_deg: v }))}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
-                prefs.angular_margin_deg === v
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-white/8 text-white/50 hover:bg-white/12'
-              }`}
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                borderRadius: 8,
+                fontSize: 11,
+                fontWeight: 600,
+                transition: 'all 0.15s',
+                background: prefs.angular_margin_deg === v ? 'rgba(232,200,72,0.2)' : 'rgba(255,255,255,0.05)',
+                border: prefs.angular_margin_deg === v ? '1px solid #e8c848' : '1px solid rgba(255,255,255,0.07)',
+                color: prefs.angular_margin_deg === v ? '#e8c848' : '#8892a4',
+              }}
             >
               ±{v}°
             </button>
@@ -199,18 +231,23 @@ export function SettingsForm({
       </div>
 
       {/* Notification lead time */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between">
-        <span className="text-sm text-white/70">{t('leadTime')}</span>
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={labelStyle}>{t('leadTime')}</span>
         <div className="flex gap-2">
           {[3, 5].map(v => (
             <button
               key={v}
               onClick={() => setPrefs(p => ({ ...p, notification_lead_min: v }))}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                prefs.notification_lead_min === v
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-white/8 text-white/50 hover:bg-white/12'
-              }`}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 600,
+                transition: 'all 0.15s',
+                background: prefs.notification_lead_min === v ? 'rgba(232,200,72,0.2)' : 'rgba(255,255,255,0.05)',
+                border: prefs.notification_lead_min === v ? '1px solid #e8c848' : '1px solid rgba(255,255,255,0.07)',
+                color: prefs.notification_lead_min === v ? '#e8c848' : '#8892a4',
+              }}
             >
               {v} {t('leadUnit')}
             </button>
@@ -219,25 +256,35 @@ export function SettingsForm({
       </div>
 
       {/* Provider info (read-only) */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between">
-        <span className="text-sm text-white/70">{t('provider')}</span>
-        <span className="text-green-400 text-xs">{t('providerAuto')}</span>
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={labelStyle}>{t('provider')}</span>
+        <span style={{ fontSize: 11, color: '#4ade80' }}>{t('providerAuto')}</span>
       </div>
 
       {/* GPS permission */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <p className="text-sm text-white/70">{t('gpsTitle')}</p>
-          <p className="text-xs mt-0.5 text-white/40">
-            {gpsStatus === 'granted' && <span className="text-green-400">{t('gpsGranted')}</span>}
-            {gpsStatus === 'denied' && <span className="text-red-400">{t('gpsDenied')}</span>}
+          <p style={labelStyle}>{t('gpsTitle')}</p>
+          <p style={{ ...mutedStyle, marginTop: 2 }}>
+            {gpsStatus === 'granted' && <span style={{ color: '#4ade80' }}>{t('gpsGranted')}</span>}
+            {gpsStatus === 'denied' && <span style={{ color: '#f87171' }}>{t('gpsDenied')}</span>}
             {(gpsStatus === 'prompt' || gpsStatus === 'unknown') && t('gpsPrompt')}
           </p>
         </div>
         {gpsStatus === 'prompt' && (
           <button
             onClick={() => navigator.geolocation.getCurrentPosition(() => setGpsStatus('granted'), () => setGpsStatus('denied'))}
-            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
+            style={{
+              flexShrink: 0,
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              background: 'rgba(232,200,72,0.15)',
+              border: '1px solid rgba(232,200,72,0.35)',
+              color: '#e8c848',
+              transition: 'all 0.15s',
+            }}
           >
             {t('gpsRequest')}
           </button>
@@ -245,19 +292,29 @@ export function SettingsForm({
       </div>
 
       {/* Push notifications */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <p className="text-sm text-white/70">{t('notifTitle')}</p>
-          <p className="text-xs mt-0.5 text-white/40">
-            {pushState === 'granted' && <span className="text-green-400">{t('notifGranted')}</span>}
-            {pushState === 'denied' && <span className="text-red-400">{t('notifDenied')}</span>}
+          <p style={labelStyle}>{t('notifTitle')}</p>
+          <p style={{ ...mutedStyle, marginTop: 2 }}>
+            {pushState === 'granted' && <span style={{ color: '#4ade80' }}>{t('notifGranted')}</span>}
+            {pushState === 'denied' && <span style={{ color: '#f87171' }}>{t('notifDenied')}</span>}
             {(pushState === 'idle' || pushState === 'unsupported') && t('notifPrompt')}
           </p>
         </div>
         {pushState === 'idle' && (
           <button
             onClick={requestPush}
-            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 text-xs font-semibold hover:bg-violet-500 transition-colors"
+            style={{
+              flexShrink: 0,
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              background: 'rgba(232,200,72,0.15)',
+              border: '1px solid rgba(232,200,72,0.35)',
+              color: '#e8c848',
+              transition: 'all 0.15s',
+            }}
           >
             {t('notifRequest')}
           </button>
@@ -266,77 +323,125 @@ export function SettingsForm({
           <button
             onClick={handleRegistra}
             disabled={registraStatus === 'sending'}
-            className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
+            style={{
+              flexShrink: 0,
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              background: 'rgba(232,200,72,0.12)',
+              border: '1px solid rgba(232,200,72,0.25)',
+              color: '#e8c848',
+              opacity: registraStatus === 'sending' ? 0.5 : 1,
+              transition: 'all 0.15s',
+            }}
           >
-            {registraStatus === 'sending' ? '...' : registraStatus === 'error' ? '✗ Errore' : 'Registra'}
+            {registraStatus === 'sending' ? '...' : registraStatus === 'error' ? 'Errore' : 'Registra'}
           </button>
         )}
         {registraStatus === 'ok' && (
-          <span className="text-xs text-green-400 shrink-0">✓ Registrato</span>
+          <span style={{ fontSize: 11, color: '#4ade80', flexShrink: 0 }}>Registrato</span>
         )}
         {pushState === 'unsupported' && (
-          <span className="text-xs text-white/30 text-right">iOS 16.4+{"\n"}+ home screen</span>
+          <span style={{ ...mutedStyle, flexShrink: 0, textAlign: 'right' }}>iOS 16.4+{"\n"}+ home screen</span>
         )}
       </div>
       {registraError && (
-        <p className="text-xs text-red-400 px-1">{registraError}</p>
+        <p style={{ fontSize: 11, color: '#f87171', paddingLeft: 4 }}>{registraError}</p>
       )}
 
       {/* Background push notifications toggle */}
       {pushState === 'granted' && (
-        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+        <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
-            <p className="text-sm text-white/70">{t('bgPushTitle')}</p>
-            <p className="text-xs mt-0.5 text-white/40">{t('bgPushDesc')}</p>
+            <p style={labelStyle}>{t('bgPushTitle')}</p>
+            <p style={{ ...mutedStyle, marginTop: 2 }}>{t('bgPushDesc')}</p>
             <button
               onClick={sendTestPush}
               disabled={pushTestStatus === 'sending'}
-              className="mt-1.5 text-xs text-violet-400 hover:text-violet-300 disabled:opacity-50 transition-colors"
+              style={{
+                marginTop: 6,
+                fontSize: 11,
+                color: pushTestStatus === 'ok' ? '#4ade80' : pushTestStatus === 'error' ? '#f87171' : '#e8c848',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                opacity: pushTestStatus === 'sending' ? 0.5 : 1,
+                transition: 'all 0.15s',
+              }}
             >
               {pushTestStatus === 'sending' && '...'}
-              {pushTestStatus === 'ok' && '✓ Inviata!'}
-              {pushTestStatus === 'error' && '✗ Errore'}
+              {pushTestStatus === 'ok' && 'Inviata!'}
+              {pushTestStatus === 'error' && 'Errore'}
               {pushTestStatus === 'idle' && 'Invia notifica di test'}
             </button>
           </div>
+          {/* Toggle */}
           <button
             onClick={() => setPrefs(p => ({ ...p, background_push_enabled: !p.background_push_enabled }))}
-            className={`shrink-0 w-12 h-6 rounded-full transition-colors relative ${
-              prefs.background_push_enabled ? 'bg-violet-600' : 'bg-white/15'
-            }`}
+            style={{
+              flexShrink: 0,
+              width: 48,
+              height: 24,
+              borderRadius: 999,
+              position: 'relative',
+              transition: 'all 0.2s',
+              background: prefs.background_push_enabled ? 'rgba(232,200,72,0.2)' : 'rgba(255,255,255,0.1)',
+              border: prefs.background_push_enabled ? '1px solid #e8c848' : '1px solid rgba(255,255,255,0.1)',
+            }}
           >
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-              prefs.background_push_enabled ? 'left-7' : 'left-1'
-            }`} />
+            <span style={{
+              position: 'absolute',
+              top: 3,
+              left: prefs.background_push_enabled ? 27 : 3,
+              width: 16,
+              height: 16,
+              borderRadius: '50%',
+              background: prefs.background_push_enabled ? '#e8c848' : 'rgba(255,255,255,0.5)',
+              transition: 'all 0.2s',
+            }} />
           </button>
         </div>
       )}
 
       {/* Health check */}
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-white/70">{t('healthTitle')}</span>
+      <div style={{ ...cardStyle }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: healthResults ? 12 : 0 }}>
+          <span style={labelStyle}>{t('healthTitle')}</span>
           <button
             onClick={runHealthCheck}
             disabled={healthLoading}
-            className="px-3 py-1.5 rounded-lg bg-violet-600/80 text-xs font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              background: 'rgba(232,200,72,0.12)',
+              border: '1px solid rgba(232,200,72,0.25)',
+              color: '#e8c848',
+              opacity: healthLoading ? 0.5 : 1,
+              transition: 'all 0.15s',
+            }}
           >
             {healthLoading ? '...' : t('healthRun')}
           </button>
         </div>
         {healthResults && (
-          <div className="space-y-1.5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {healthResults.map(p => (
-              <div key={p.name} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${
-                    p.status === 'ok' ? 'bg-green-400' :
-                    p.status === 'unconfigured' ? 'bg-yellow-400' :
-                    'bg-red-400'
-                  }`} />
-                  <span className="text-white/60 font-mono">{p.name}</span>
+              <div key={p.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: p.status === 'ok' ? '#4ade80' : p.status === 'unconfigured' ? '#facc15' : '#f87171',
+                    display: 'inline-block',
+                  }} />
+                  <span style={{ ...mutedStyle, fontFamily: 'monospace' }}>{p.name}</span>
                 </div>
-                <span className="text-white/30 font-mono">
+                <span style={{ color: 'rgba(232,234,240,0.3)', fontFamily: 'monospace' }}>
                   {p.status === 'ok' ? `${p.ms}ms` :
                    p.status === 'unconfigured' ? t('healthUnconfigured') :
                    t('healthError')}
@@ -344,7 +449,7 @@ export function SettingsForm({
               </div>
             ))}
             {healthCheckedAt && (
-              <p className="text-white/20 text-xs pt-1">
+              <p style={{ ...mutedStyle, fontSize: 10, paddingTop: 4, color: 'rgba(136,146,164,0.5)' }}>
                 {new Date(healthCheckedAt).toLocaleTimeString()}
               </p>
             )}
@@ -352,12 +457,48 @@ export function SettingsForm({
         )}
       </div>
 
+      {/* Save button */}
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
+        style={{
+          width: '100%',
+          borderRadius: 12,
+          padding: '12px 0',
+          fontSize: 14,
+          fontWeight: 600,
+          background: saved ? 'rgba(74,222,128,0.15)' : 'rgba(232,200,72,0.18)',
+          border: saved ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(232,200,72,0.4)',
+          color: saved ? '#4ade80' : '#e8c848',
+          opacity: saving ? 0.5 : 1,
+          transition: 'all 0.2s',
+          cursor: saving ? 'not-allowed' : 'pointer',
+        }}
       >
-        {saved ? `✓ ${t('saved')}` : saving ? '...' : t('save')}
+        {saved ? `${t('saved')}` : saving ? '...' : t('save')}
+      </button>
+
+      {/* Sign Out */}
+      <button
+        onClick={async () => {
+          const supabase = createClient()
+          await supabase.auth.signOut()
+          window.location.replace('/')
+        }}
+        style={{
+          width: '100%',
+          borderRadius: 12,
+          padding: '10px 0',
+          fontSize: 13,
+          fontWeight: 600,
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          color: '#f87171',
+          transition: 'all 0.2s',
+          cursor: 'pointer',
+        }}
+      >
+        Sign Out
       </button>
     </div>
   )

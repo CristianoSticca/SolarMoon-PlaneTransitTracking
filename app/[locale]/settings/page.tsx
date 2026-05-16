@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsForm } from '@/components/settings/SettingsForm'
 import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
+import { AppHeader } from '@/components/layout/AppHeader'
 
 export default async function SettingsPage({
   params,
@@ -32,14 +32,11 @@ export default async function SettingsPage({
   }
 
   return (
-    <div className="min-h-dvh max-w-md mx-auto p-4">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href={`/${locale}/monitor`} className="text-white/50 hover:text-white transition-colors text-lg">
-          ←
-        </Link>
-        <h1 className="text-xl font-bold">{t('title')}</h1>
+    <div className="min-h-dvh max-w-md mx-auto">
+      <AppHeader pageLabel="Settings" />
+      <div className="px-4 pb-4">
+        <SettingsForm initialPrefs={initialPrefs} userId={user.id} locale={locale} />
       </div>
-      <SettingsForm initialPrefs={initialPrefs} userId={user.id} locale={locale} />
     </div>
   )
 }
