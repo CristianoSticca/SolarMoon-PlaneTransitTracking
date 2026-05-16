@@ -2,19 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   locale: string
 }
 
 const tabs = [
-  { key: 'monitor', label: 'Monitor', icon: '◎', path: (l: string) => `/${l}/monitor` },
-  { key: 'settings', label: 'Settings', icon: '⚙', path: (l: string) => `/${l}/settings` },
-  { key: 'guide', label: 'Guida', icon: '📖', path: (l: string) => `/${l}/guide` },
+  { key: 'monitor' as const, icon: '◎', path: (l: string) => `/${l}/monitor` },
+  { key: 'settings' as const, icon: '⚙', path: (l: string) => `/${l}/settings` },
+  { key: 'guide' as const, icon: '📖', path: (l: string) => `/${l}/guide` },
 ]
 
 export function BottomNav({ locale }: Props) {
   const pathname = usePathname()
+  const t = useTranslations('nav')
 
   return (
     <nav
@@ -38,7 +40,7 @@ export function BottomNav({ locale }: Props) {
           >
             <span style={{ fontSize: 18, lineHeight: 1 }}>{tab.icon}</span>
             <span style={{ fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-              {tab.label}
+              {t(tab.key)}
             </span>
           </Link>
         )

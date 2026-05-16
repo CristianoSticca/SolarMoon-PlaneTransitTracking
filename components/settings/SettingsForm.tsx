@@ -51,6 +51,7 @@ export function SettingsForm({
   const [prefs, setPrefs] = useState(initialPrefs)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [gpsStatus, setGpsStatus] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown')
   const { state: pushState, subscribed: pushSubscribed, request: requestPush, resubscribe: resubscribePush } = usePushNotifications()
 
@@ -125,6 +126,8 @@ export function SettingsForm({
       setHealthLoading(false)
     }
   }
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     if (!navigator.permissions) {
@@ -266,12 +269,12 @@ export function SettingsForm({
         <div>
           <p style={labelStyle}>{t('gpsTitle')}</p>
           <p style={{ ...mutedStyle, marginTop: 2 }}>
-            {gpsStatus === 'granted' && <span style={{ color: '#4ade80' }}>{t('gpsGranted')}</span>}
-            {gpsStatus === 'denied' && <span style={{ color: '#f87171' }}>{t('gpsDenied')}</span>}
-            {(gpsStatus === 'prompt' || gpsStatus === 'unknown') && t('gpsPrompt')}
+            {mounted && gpsStatus === 'granted' && <span style={{ color: '#4ade80' }}>{t('gpsGranted')}</span>}
+            {mounted && gpsStatus === 'denied' && <span style={{ color: '#f87171' }}>{t('gpsDenied')}</span>}
+            {(!mounted || gpsStatus === 'prompt' || gpsStatus === 'unknown') && t('gpsPrompt')}
           </p>
         </div>
-        {gpsStatus === 'prompt' && (
+        {mounted && gpsStatus === 'prompt' && (
           <button
             onClick={() => navigator.geolocation.getCurrentPosition(() => setGpsStatus('granted'), () => setGpsStatus('denied'))}
             style={{
