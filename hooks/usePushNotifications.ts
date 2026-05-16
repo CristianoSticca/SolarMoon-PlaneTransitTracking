@@ -31,7 +31,7 @@ export function usePushNotifications(): {
 } {
   const [state, setState] = useState<PushState>(() => {
     if (typeof window === 'undefined') return 'idle'
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported'
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsupported'
     const perm = Notification.permission
     if (perm === 'granted') return 'granted'
     if (perm === 'denied') return 'denied'
