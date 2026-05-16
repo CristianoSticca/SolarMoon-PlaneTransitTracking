@@ -15,9 +15,8 @@ import dynamic from 'next/dynamic'
 const MapView = dynamic(() => import('@/components/monitor/MapView').then(m => m.MapView), { ssr: false })
 const ARView = dynamic(() => import('@/components/monitor/ARView').then(m => m.ARView), { ssr: false })
 import { TransitAlert } from '@/components/monitor/TransitAlert'
-import { MonitorToggle } from '@/components/monitor/MonitorToggle'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
+import { AppHeader } from '@/components/layout/AppHeader'
 
 const DEFAULT_MARGIN = 0.5
 const DEFAULT_RADIUS = 25
@@ -125,22 +124,40 @@ export default function MonitorPage() {
   }
 
   return (
-    <div className="flex flex-col h-dvh max-w-md mx-auto p-4 gap-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <span className="text-lg font-bold tracking-tight">🌙 SolarMoon</span>
-        <div className="flex items-center gap-3">
-          {flightData && (
-            <span className="text-green-400 text-xs font-mono">⬤ {t('live')}</span>
-          )}
-          {loading && <span className="text-white/30 text-xs animate-pulse">...</span>}
-          <Link href={`/${locale}/settings`} className="text-white/50 hover:text-white transition-colors text-xl" aria-label="Settings">⚙</Link>
-          <Link href={`/${locale}/guide`} className="text-white/50 hover:text-white transition-colors text-lg font-bold" aria-label="Guide">?</Link>
-        </div>
+    <div className="flex flex-col min-h-screen" style={{ color: '#e8eaf0' }}>
+      <AppHeader
+        pageLabel="Monitor"
+        right={
+          geo.status === 'granted'
+            ? <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#8892a4', letterSpacing: '0.04em' }}>{geo.lat.toFixed(4)}° N · {geo.lon.toFixed(4)}° E</span>
+            : undefined
+        }
+      />
+
+      {/* ADS-B badge */}
+      <div className="px-4 pb-2" style={{ position: 'relative', zIndex: 1 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(232,200,72,0.1)', border: '1px solid rgba(232,200,72,0.25)', color: '#e8c848', fontSize: 9, padding: '3px 10px', borderRadius: 20, letterSpacing: '0.08em', textTransform: 'uppercase' }}>⭐ ADS-B LIVE</span>
       </div>
 
-      {/* Toggle */}
-      <MonitorToggle view={view} onChange={setView} />
+      {/* View tabs */}
+      <div className="px-4 pb-3" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="flex gap-1 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          {(['radar', 'list', 'map', 'ar'] as const).map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all"
+              style={
+                view === v
+                  ? { background: 'rgba(232,200,72,0.12)', color: '#e8c848', border: '1px solid rgba(232,200,72,0.25)', letterSpacing: '0.05em', textTransform: 'uppercase' }
+                  : { color: '#8892a4', border: '1px solid transparent', letterSpacing: '0.05em', textTransform: 'uppercase' }
+              }
+            >
+              {v === 'radar' ? t('radar') : v === 'list' ? t('list') : v === 'map' ? t('map') : t('ar')}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* GPS error */}
       {geo.status === 'denied' && (
@@ -190,24 +207,10 @@ export default function MonitorPage() {
         <TransitAlert event={transitEvents[0] ?? null} />
       )}
 
-      {/* Footer */}
-      <div className="flex items-center justify-between text-white/20 text-xs pb-safe">
-        <span>
-          {flightData ? t('aircraft', { count: flightData.aircraft.length }) : ''}
-        </span>
-        <div className="flex gap-3 items-center">
-          {wakeLockSupported && (
-            <button
-              onClick={toggleWakeLock}
-              className={`transition-colors ${wakeLockActive ? 'text-violet-400' : 'hover:text-white/40'}`}
-            >
-              {t('wakeLock')}
-            </button>
-          )}
-          <button onClick={handleLogout} className="hover:text-white/50 transition-colors">
-            logout
-          </button>
-        </div>
+      {/* Status bar */}
+      <div className="px-4 py-2 flex justify-between items-center" style={{ position: 'relative', zIndex: 1, fontSize: 9, color: '#8892a4', letterSpacing: '0.06em', fontFamily: 'monospace' }}>
+        <span><span style={{ display: 'inline-block', width: 5, height: 5, background: '#4ade80', borderRadius: '50%', marginRight: 4, verticalAlign: 'middle' }} />ADS-B FEED</span>
+        {flightData && <span>{flightData.aircraft?.length ?? 0} contacts · upd 3s</span>}
       </div>
     </div>
   )
