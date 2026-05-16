@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { StarBackground } from '@/components/layout/StarBackground'
+import { BottomNav } from '@/components/layout/BottomNav'
 
 const locales = ['it', 'en']
 
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#302b63',
+  themeColor: '#060e1a',
 }
 
 export default async function LocaleLayout({
@@ -26,9 +28,14 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <body>
+      <body style={{ background: '#060e1a', color: '#e8eaf0', minHeight: '100dvh' }}>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <StarBackground />
+          {/* padding-bottom leaves room for bottom nav (56px) + safe area */}
+          <div style={{ position: 'relative', zIndex: 1, paddingBottom: 'calc(56px + env(safe-area-inset-bottom))' }}>
+            {children}
+          </div>
+          <BottomNav locale={locale} />
         </NextIntlClientProvider>
         <script dangerouslySetInnerHTML={{ __html: `
           window.addEventListener('beforeinstallprompt', function(e) {
