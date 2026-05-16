@@ -1,4 +1,8 @@
-# SolarMoon — Aircraft Transit Tracker
+# ASTROTRANSIT - FLIGHT PATHS • SUN & MOON
+
+<p align="center">
+  <img src="public/astrotransit.jpg" alt="AstroTransit" width="600" />
+</p>
 
 **Live:** [transitsky.cristianosticca.com](https://transitsky.cristianosticca.com)
 
@@ -8,7 +12,7 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 
 ## Features
 
-- **Real-time radar** — compass view with Moon (crescent) and Sun (with rays) as fixed points; FR24-style aircraft silhouettes rotated by heading
+- **Real-time radar** — compass view with Moon (crescent) and Sun (with rays) positioned at their real sky azimuth/elevation; FR24-style aircraft silhouettes rotated by heading
 - **List view** — sorted transit countdowns + nearby aircraft with projected minimum separation
 - **Map view** — geographic Leaflet map with FR24-style aircraft icons; panning/zooming triggers new API queries for the visible area (up to 450 km radius); click any aircraft for full details
 - **AR camera view** — live camera feed with aircraft, Moon and Sun overlaid at their real sky positions using GPS + compass + gyroscope
@@ -29,7 +33,7 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 
 | View | Description |
 |---|---|
-| 📡 Radar | SVG compass centered on you. Moon/Sun as distinct icons (crescent/rays). Aircraft as FR24-style silhouettes rotated by heading. Green = transiting. |
+| 📡 Radar | SVG compass centered on you. Moon/Sun positioned at their real sky azimuth/elevation (updated every 30s). Aircraft as FR24-style silhouettes rotated by heading. Green = transiting. |
 | ☰ Lista | Sorted list of transit countdowns (green) + nearby aircraft with projected min separation (grey). |
 | 🗺️ Mappa | Leaflet map, OSM tiles. Yellow aircraft icons. Fetches aircraft for visible map bounds on zoom/pan (up to 450 km radius). Click for detail panel with AirLabs enrichment. |
 | 📷 AR | Camera feed with aircraft/Moon/Sun overlaid at correct sky positions. Requires compass permission on iOS. Tap aircraft for quick popup. |
@@ -60,7 +64,7 @@ When enabled in Settings → "Notifiche in background":
 
 | Parameter | Default | Description |
 |---|---|---|
-| Search radius | 25 km | Geographic area queried for aircraft |
+| Search radius | 25 km | Geographic area queried for aircraft (10–50 km via Settings; up to 450 km in Map view based on visible bounds) |
 | Angular margin | ±0.5° | Detection threshold (Moon/Sun diameter ≈ 0.5°) |
 | Notification lead | 3 min | How far in advance to send push alert |
 
@@ -82,6 +86,7 @@ When enabled in Settings → "Notifiche in background":
 | Push (foreground) | Web Push API, `web-push`, Service Worker (`public/sw.js`) |
 | Push (background) | Server-side cron via [cron-job.org](https://cron-job.org), `/api/cron/transit-check` |
 | i18n | next-intl |
+| Analytics | Vercel Analytics |
 | Deploy | Vercel |
 
 ---
@@ -131,7 +136,7 @@ npm run dev
 ### Tests
 
 ```bash
-npm test
+npm run test
 ```
 
 The test suite covers the astronomy library (celestial position calculations, transit detection algorithm) and flight data normalizers.
@@ -230,9 +235,10 @@ hooks/
   useTransitDetection.ts
   useWakeLock.ts
   usePushNotifications.ts  Handles SW registration + subscription
-  useSessionLog.ts
+  useSessionLog.ts         Logs transit events to sessionStorage (last 20)
 components/
-  monitor/          RadarView, ListView, MapView, ARView, TransitAlert, MonitorToggle
+  layout/           AppHeader, BottomNav, StarBackground
+  monitor/          RadarView, ListView, MapView, ARView, TransitAlert
   onboarding/       OnboardingSteps
   settings/         SettingsForm
   guide/            GuideContent with SVG diagrams
