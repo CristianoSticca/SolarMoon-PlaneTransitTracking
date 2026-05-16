@@ -14,15 +14,21 @@ function Section({
   visual?: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
+    <div
+      className="rounded-xl p-5 space-y-3"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
       <div className="flex items-center gap-3">
         <span className="text-2xl">{icon}</span>
-        <h2 className="text-base font-semibold">{title}</h2>
+        <h2 className="text-base font-semibold" style={{ color: '#e8eaf0' }}>{title}</h2>
       </div>
       {visual && (
-        <div className="rounded-lg bg-black/20 p-3 flex justify-center">{visual}</div>
+        <div className="rounded-lg p-3 flex justify-center" style={{ background: 'rgba(0,0,0,0.20)' }}>{visual}</div>
       )}
-      <p className="text-sm text-white/60 leading-relaxed">{desc}</p>
+      <p className="text-sm leading-relaxed" style={{ color: '#8892a4' }}>{desc}</p>
     </div>
   )
 }
@@ -30,11 +36,11 @@ function Section({
 function RadarDiagram() {
   return (
     <svg width="120" height="120" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(139,92,246,0.2)" strokeWidth="1" />
-      <circle cx="60" cy="60" r="36" fill="none" stroke="rgba(139,92,246,0.3)" strokeWidth="1" />
-      <circle cx="60" cy="60" r="18" fill="none" stroke="rgba(139,92,246,0.4)" strokeWidth="1" />
-      <line x1="5" y1="60" x2="115" y2="60" stroke="rgba(139,92,246,0.15)" strokeWidth="1" />
-      <line x1="60" y1="5" x2="60" y2="115" stroke="rgba(139,92,246,0.15)" strokeWidth="1" />
+      <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(232,200,72,0.2)" strokeWidth="1" />
+      <circle cx="60" cy="60" r="36" fill="none" stroke="rgba(232,200,72,0.3)" strokeWidth="1" />
+      <circle cx="60" cy="60" r="18" fill="none" stroke="rgba(232,200,72,0.4)" strokeWidth="1" />
+      <line x1="5" y1="60" x2="115" y2="60" stroke="rgba(232,200,72,0.15)" strokeWidth="1" />
+      <line x1="60" y1="5" x2="60" y2="115" stroke="rgba(232,200,72,0.15)" strokeWidth="1" />
       {/* Observer */}
       <circle cx="60" cy="60" r="4" fill="white" opacity="0.9" />
       {/* Moon */}

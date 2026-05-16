@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { GuideContent } from '@/components/guide/GuideContent'
-import Link from 'next/link'
+import { AppHeader } from '@/components/layout/AppHeader'
 
 export default async function GuidePage({
   params,
@@ -11,17 +11,11 @@ export default async function GuidePage({
   const t = await getTranslations('guide')
 
   return (
-    <div className="min-h-dvh max-w-md mx-auto p-4 pb-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href={`/${locale}/monitor`}
-          className="text-white/50 hover:text-white transition-colors text-lg"
-        >
-          ←
-        </Link>
-        <h1 className="text-xl font-bold">{t('title')}</h1>
+    <div className="min-h-dvh max-w-md mx-auto pb-8">
+      <AppHeader pageLabel="Guida" />
+      <div className="px-4 pt-2">
+        <GuideContent />
       </div>
-      <GuideContent />
     </div>
   )
 }
