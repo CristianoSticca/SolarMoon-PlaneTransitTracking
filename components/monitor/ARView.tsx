@@ -269,8 +269,9 @@ export function ARView({ aircraft, transitEvents, lat, lon, onClose }: Props) {
       {/* Mini popup on aircraft tap */}
       {popup && (
         <div
-          className="absolute z-10 rounded-xl bg-[#0f0c29]/90 border border-white/15 backdrop-blur-sm px-4 py-3 text-sm min-w-44 shadow-xl"
+          className="absolute z-10 rounded-xl backdrop-blur-sm px-4 py-3 text-sm min-w-44 shadow-xl"
           style={{
+            background: 'rgba(6,14,26,0.92)', border: '1px solid rgba(255,255,255,0.1)',
             left: '50%', bottom: '120px',
             transform: 'translateX(-50%)',
           }}
@@ -315,7 +316,8 @@ export function ARView({ aircraft, transitEvents, lat, lon, onClose }: Props) {
         <div className="absolute top-16 left-0 right-0 flex justify-center px-4">
           <button
             onClick={requestOrientation}
-            className="flex items-center gap-2 bg-violet-600/90 backdrop-blur-sm rounded-full px-4 py-2.5 text-white text-sm font-semibold shadow-xl"
+            className="flex items-center gap-2 backdrop-blur-sm rounded-full px-4 py-2.5 text-sm font-semibold shadow-xl"
+            style={{ background: 'rgba(232,200,72,0.9)', color: '#060e1a' }}
           >
             🧭 Abilita bussola
           </button>
@@ -332,7 +334,7 @@ export function ARView({ aircraft, transitEvents, lat, lon, onClose }: Props) {
       {/* Camera error */}
       {camError && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-[#0f0c29]/90 rounded-2xl px-6 py-5 text-center max-w-xs">
+          <div className="rounded-2xl px-6 py-5 text-center max-w-xs" style={{ background: 'rgba(6,14,26,0.92)' }}>
             <div className="text-3xl mb-3">📷</div>
             <div className="text-white font-semibold text-sm">{camError}</div>
             <div className="text-white/40 text-xs mt-2">

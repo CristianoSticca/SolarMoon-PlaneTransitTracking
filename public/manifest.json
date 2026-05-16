@@ -4,8 +4,8 @@
   "description": "Track aircraft transits across Moon and Sun for astrophotography",
   "start_url": "/it",
   "display": "standalone",
-  "background_color": "#0f0c29",
-  "theme_color": "#302b63",
+  "background_color": "#060e1a",
+  "theme_color": "#060e1a",
   "orientation": "portrait",
   "icons": [
     { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png" },

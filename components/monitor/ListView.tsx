@@ -34,18 +34,19 @@ export function ListView({ events, nearby }: { events: TransitEvent[]; nearby: N
             className={`rounded-xl px-4 py-3 flex items-center justify-between border transition-all ${
               isFirst
                 ? 'border-green-400/40 bg-green-400/8'
-                : 'border-white/8 bg-white/4'
+                : ''
             }`}
+            style={!isFirst ? { border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' } : {}}
           >
             <div>
-              <div className={`text-sm font-semibold ${isFirst ? 'text-green-400' : 'text-white/80'}`}>
+              <div className={`text-sm font-semibold ${isFirst ? 'text-green-400' : ''}`} style={!isFirst ? { color: '#e8eaf0' } : {}}>
                 ✈ {ev.aircraft.callsign || ev.aircraft.icao} → {targetLabel}
               </div>
-              <div className="text-white/30 text-xs">
+              <div className="text-xs" style={{ color: '#8892a4' }}>
                 {t('angularError', { deg: ev.minAngularSeparation.toFixed(2) })}
               </div>
             </div>
-            <div className={`font-mono text-lg font-bold tabular-nums ${isFirst ? 'text-white' : 'text-white/50'}`}>
+            <div className={`font-mono text-lg font-bold tabular-nums ${isFirst ? 'text-white' : ''}`} style={!isFirst ? { color: '#8892a4' } : {}}>
               {formatCountdown(ev.countdown)}
             </div>
           </div>
@@ -55,23 +56,24 @@ export function ListView({ events, nearby }: { events: TransitEvent[]; nearby: N
       {/* Nearby aircraft — not in transit */}
       {nearby.length > 0 && (
         <>
-          <div className="text-white/20 text-xs px-1 pt-2">{t('nearbyTitle')}</div>
+          <div className="text-xs px-1 pt-2" style={{ color: 'rgba(255,255,255,0.2)' }}>{t('nearbyTitle')}</div>
           {nearby.map((n) => {
             const targetLabel = n.target === 'moon' ? `🌙 ${t('moon')}` : `☀️ ${t('sun')}`
             return (
               <div
                 key={`nearby-${n.aircraft.icao}-${n.target}`}
-                className="rounded-xl px-4 py-3 flex items-center justify-between border border-white/5 bg-white/2 opacity-60"
+                className="rounded-xl px-4 py-3 flex items-center justify-between opacity-60"
+                style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
               >
                 <div>
-                  <div className="text-sm text-white/50">
+                  <div className="text-sm" style={{ color: '#8892a4' }}>
                     ✈ {n.aircraft.callsign || n.aircraft.icao} · {targetLabel}
                   </div>
-                  <div className="text-white/25 text-xs">
+                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
                     min {n.minProjectedSeparationDeg.toFixed(2)}° · ora {n.currentSeparationDeg.toFixed(2)}°
                   </div>
                 </div>
-                <div className="text-white/25 text-xs font-mono">no transit</div>
+                <div className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>no transit</div>
               </div>
             )
           })}

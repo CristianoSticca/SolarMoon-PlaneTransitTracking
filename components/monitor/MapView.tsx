@@ -46,10 +46,11 @@ function InfoTooltip({ text }: { text: string }) {
     <span className="relative inline-flex items-center">
       <button
         onClick={e => { e.stopPropagation(); setOpen(v => !v) }}
-        className="ml-1 w-3.5 h-3.5 rounded-full bg-white/10 text-white/30 hover:text-white/70 text-[9px] leading-none flex items-center justify-center"
+        className="ml-1 w-3.5 h-3.5 rounded-full text-[9px] leading-none flex items-center justify-center"
+        style={{ background: 'rgba(255,255,255,0.1)', color: '#8892a4' }}
       >i</button>
       {open && (
-        <span className="absolute bottom-5 left-0 z-50 w-52 rounded-lg bg-[#1e1a3a] border border-white/10 px-3 py-2 text-xs text-white/70 shadow-xl">
+        <span className="absolute bottom-5 left-0 z-50 w-52 rounded-lg px-3 py-2 text-xs shadow-xl" style={{ background: '#0a1525', border: '1px solid rgba(255,255,255,0.07)', color: '#8892a4' }}>
           {text}
         </span>
       )}
@@ -91,7 +92,7 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
   ].filter(Boolean) as { label: string; value: string }[]
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl border-t border-white/10 bg-[#0f0c29]/95 backdrop-blur-md p-5 space-y-3 max-h-[65vh] overflow-y-auto">
+    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl backdrop-blur-md p-5 space-y-3 max-h-[65vh] overflow-y-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(6,14,26,0.96)' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
@@ -109,7 +110,7 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
         <div className="text-white/30 text-xs animate-pulse">Caricamento dettagli volo...</div>
       )}
       {details && (details.depCity || details.arrCity) && (
-        <div className="rounded-xl bg-violet-600/15 border border-violet-400/20 px-4 py-3 flex items-center justify-between">
+        <div className="rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(232,200,72,0.12)', border: '1px solid rgba(232,200,72,0.25)' }}>
           <div className="text-center">
             <div className="text-white font-bold text-sm">{details.depIata ?? '—'}</div>
             <div className="text-white/50 text-xs">{details.depCity ?? ''}</div>
@@ -123,8 +124,10 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
             <div className={`text-xs px-2 py-1 rounded-full font-semibold ${
               details.status === 'en-route' ? 'bg-green-400/20 text-green-400' :
               details.status === 'landed' ? 'bg-blue-400/20 text-blue-400' :
-              'bg-white/10 text-white/50'
-            }`}>{details.status}</div>
+              ''
+            }`}
+            style={details.status !== 'en-route' && details.status !== 'landed' ? { background: 'rgba(255,255,255,0.1)', color: '#8892a4' } : {}}
+            >{details.status}</div>
           )}
         </div>
       )}
@@ -132,8 +135,8 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
       {/* Tech details */}
       <div className="grid grid-cols-2 gap-2 text-sm">
         {rows.map(({ label, value }) => (
-          <div key={label} className={`rounded-lg bg-white/5 px-3 py-2 ${label === 'Posizione' ? 'col-span-2' : ''}`}>
-            <div className="flex items-center text-white/40 text-xs">
+          <div key={label} className={`rounded-lg px-3 py-2 ${label === 'Posizione' ? 'col-span-2' : ''}`} style={{ background: 'rgba(255,255,255,0.05)' }}>
+            <div className="flex items-center text-xs" style={{ color: '#8892a4' }}>
               {label}
               {FIELD_INFO[label] && <InfoTooltip text={FIELD_INFO[label]} />}
             </div>
