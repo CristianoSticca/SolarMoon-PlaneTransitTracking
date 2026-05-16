@@ -85,29 +85,34 @@ export function OnboardingSteps({
       {steps.map((step, i) => (
         <div
           key={i}
-          className={`rounded-xl border px-4 py-4 flex items-center gap-4 transition-all ${
+          style={
             step.done
-              ? 'border-green-400/30 bg-green-400/8'
-              : 'border-white/10 bg-white/5'
-          }`}
+              ? { border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.08)' }
+              : { border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.04)' }
+          }
+          className="rounded-xl px-4 py-4 flex items-center gap-4 transition-all"
         >
           <span className="text-2xl flex-shrink-0">{step.icon}</span>
           <div className="flex-1 min-w-0">
             <div
-              className={`text-sm font-semibold ${
-                step.done ? 'text-green-400' : 'text-white/80'
-              }`}
+              className="text-sm font-semibold"
+              style={{ color: step.done ? '#4ade80' : '#e8eaf0' }}
             >
               {step.title}
             </div>
-            <div className="text-xs text-white/40 mt-0.5">{step.desc}</div>
+            <div className="text-xs mt-0.5" style={{ color: '#8892a4' }}>{step.desc}</div>
           </div>
           {step.done ? (
-            <span className="text-green-400 text-lg flex-shrink-0">✓</span>
+            <span className="text-lg flex-shrink-0" style={{ color: '#4ade80' }}>✓</span>
           ) : (
             <button
               onClick={step.onAction}
-              className="px-3 py-1.5 rounded-full bg-violet-600/60 text-xs font-semibold hover:bg-violet-600 transition-colors flex-shrink-0"
+              style={{
+                background: 'rgba(232,200,72,0.15)',
+                border: '1px solid rgba(232,200,72,0.4)',
+                color: '#e8c848',
+              }}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex-shrink-0"
             >
               {step.action}
             </button>
@@ -118,13 +123,19 @@ export function OnboardingSteps({
       <div className="flex gap-3 pt-2">
         <button
           onClick={finish}
-          className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-semibold hover:bg-violet-500 transition-colors"
+          style={{
+            background: 'rgba(232,200,72,0.15)',
+            border: '1px solid rgba(232,200,72,0.4)',
+            color: '#e8c848',
+          }}
+          className="flex-1 rounded-xl py-3 text-sm font-semibold transition-colors"
         >
           {t('continue')}
         </button>
         <button
           onClick={finish}
-          className="px-4 rounded-xl text-white/30 hover:text-white/50 text-sm transition-colors"
+          className="px-4 rounded-xl text-sm transition-colors"
+          style={{ color: '#8892a4' }}
         >
           {t('skip')}
         </button>
