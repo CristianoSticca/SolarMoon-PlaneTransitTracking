@@ -25,8 +25,14 @@ export function TransitAlert({ event }: { event: TransitEvent | null }) {
 
   if (!event) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/40 text-sm">
-        {t('noTransits')}
+      <div
+        style={{
+          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(255,255,255,0.04)',
+        }}
+        className="rounded-xl px-4 py-3 text-center text-sm"
+      >
+        <span style={{ color: '#8892a4' }}>{t('noTransits')}</span>
       </div>
     )
   }
@@ -35,20 +41,35 @@ export function TransitAlert({ event }: { event: TransitEvent | null }) {
   const isImminent = countdown < 60
 
   return (
-    <div className={`rounded-xl border px-4 py-3 flex items-center justify-between transition-all ${
-      isImminent
-        ? 'border-green-400/60 bg-green-400/10 animate-pulse'
-        : 'border-green-400/30 bg-green-400/8'
-    }`}>
+    <div
+      style={
+        isImminent
+          ? {
+              border: '1px solid rgba(232,200,72,0.25)',
+              background: 'rgba(232,200,72,0.12)',
+            }
+          : {
+              border: '1px solid rgba(232,200,72,0.25)',
+              background: 'rgba(232,200,72,0.12)',
+            }
+      }
+      className={`rounded-xl px-4 py-3 flex items-center justify-between transition-all${isImminent ? ' animate-pulse' : ''}`}
+    >
       <div>
-        <div className="text-green-400 text-xs tracking-widest uppercase font-mono">
+        <div
+          style={{ color: '#e8c848', fontFamily: 'monospace' }}
+          className="text-xs tracking-widest uppercase"
+        >
           ⬤ {event.aircraft.callsign || event.aircraft.icao} → {targetLabel}
         </div>
-        <div className="text-white/40 text-xs">
+        <div style={{ color: '#8892a4' }} className="text-xs">
           {t('angularError', { deg: event.minAngularSeparation.toFixed(2) })}
         </div>
       </div>
-      <div className="text-white text-2xl font-black font-mono tabular-nums">
+      <div
+        style={{ color: '#e8eaf0', fontFamily: 'monospace' }}
+        className="text-2xl font-black tabular-nums"
+      >
         {formatCountdown(countdown)}
       </div>
     </div>
