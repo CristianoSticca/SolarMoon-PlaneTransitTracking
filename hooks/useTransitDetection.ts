@@ -10,9 +10,11 @@ interface Options {
   lat: number
   lon: number
   marginDeg: number
+  minMoonElevationDeg?: number
+  maxSunElevationDeg?: number
 }
 
-export function useTransitDetection({ aircraft, lat, lon, marginDeg }: Options): {
+export function useTransitDetection({ aircraft, lat, lon, marginDeg, minMoonElevationDeg, maxSunElevationDeg }: Options): {
   events: TransitEvent[]
   nearby: NearbyAircraft[]
 } {
@@ -21,6 +23,6 @@ export function useTransitDetection({ aircraft, lat, lon, marginDeg }: Options):
     const now = new Date()
     const moon = getMoonPosition(lat, lon, now)
     const sun = getSunPosition(lat, lon, now)
-    return detectTransits(aircraft, { lat, lon }, moon, sun, { marginDeg })
-  }, [aircraft, lat, lon, marginDeg])
+    return detectTransits(aircraft, { lat, lon }, moon, sun, { marginDeg, minMoonElevationDeg, maxSunElevationDeg })
+  }, [aircraft, lat, lon, marginDeg, minMoonElevationDeg, maxSunElevationDeg])
 }

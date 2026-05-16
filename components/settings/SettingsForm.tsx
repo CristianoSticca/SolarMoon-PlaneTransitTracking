@@ -12,6 +12,8 @@ interface Prefs {
   angular_margin_deg: number
   notification_lead_min: number
   background_push_enabled: boolean
+  min_moon_elevation_deg: number
+  max_sun_elevation_deg: number
 }
 
 const cardStyle: React.CSSProperties = {
@@ -231,6 +233,36 @@ export function SettingsForm({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Photo window — moon */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <span style={labelStyle}>{t('moonElevationTitle')}</span>
+          <span style={goldValueStyle}>{prefs.min_moon_elevation_deg}°</span>
+        </div>
+        <input
+          type="range" min={0} max={45} step={5}
+          value={prefs.min_moon_elevation_deg}
+          onChange={e => setPrefs(p => ({ ...p, min_moon_elevation_deg: Number(e.target.value) }))}
+          style={{ width: '100%', accentColor: '#e8c848' }}
+        />
+        <p style={{ ...mutedStyle, fontSize: 10, marginTop: 4 }}>{t('moonElevationHint')}</p>
+      </div>
+
+      {/* Photo window — sun */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <span style={labelStyle}>{t('sunElevationTitle')}</span>
+          <span style={goldValueStyle}>{prefs.max_sun_elevation_deg}°</span>
+        </div>
+        <input
+          type="range" min={5} max={45} step={5}
+          value={prefs.max_sun_elevation_deg}
+          onChange={e => setPrefs(p => ({ ...p, max_sun_elevation_deg: Number(e.target.value) }))}
+          style={{ width: '100%', accentColor: '#e8c848' }}
+        />
+        <p style={{ ...mutedStyle, fontSize: 10, marginTop: 4 }}>{t('sunElevationHint')}</p>
       </div>
 
       {/* Notification lead time */}

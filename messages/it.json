@@ -61,7 +61,11 @@
     "healthUnconfigured": "non configurato",
     "healthError": "errore",
     "bgPushTitle": "Notifiche in background",
-    "bgPushDesc": "Ricevi avvisi anche con l'app chiusa. Il server controlla ogni minuto."
+    "bgPushDesc": "Ricevi avvisi anche con l'app chiusa. Il server controlla ogni minuto.",
+    "moonElevationTitle": "Luna — elevazione minima",
+    "moonElevationHint": "Mostra transiti lunari solo quando la luna è almeno a questa altezza sull'orizzonte. A 0° è all'orizzonte, a 45° è quasi a metà cielo.",
+    "sunElevationTitle": "Sole — elevazione massima",
+    "sunElevationHint": "Mostra transiti solari solo quando il sole è ancora basso (alba/tramonto). A 20° hai ancora luce dorata; sopra 30° la luce è troppo piatta."
   },
   "guide": {
     "title": "Come funziona",
@@ -73,7 +77,16 @@
     "listReading": { "title": "Come leggere la Lista", "desc": "La sezione verde mostra i transiti reali con countdown. La sezione grigia 'Aerei vicini' mostra tutti gli altri aerei con due valori: 'ora' è la distanza angolare attuale; 'min' è la minima che raggiungerà nei prossimi 10 minuti. Se 'min' scende sotto il margine impostato, l'aereo sale in verde." },
     "mapView": { "title": "Vista Mappa", "desc": "Mappa geografica con tutti gli aerei nell'area visibile. Icone gialle stile FlightRadar24 — verdi se in transito. Zoom o sposta la mappa: la ricerca si aggiorna sull'area visibile (fino a 450 km). Tocca un aereo per vedere callsign, altitudine, velocità, tipo, registrazione, variometro, squawk e — se disponibile — compagnia, partenza e arrivo." },
     "arView": { "title": "Vista AR", "desc": "Feed live dalla fotocamera con aerei, Luna e Sole sovraimpressi nella posizione reale nel cielo. Calcolata da GPS dell'aereo + bussola + giroscopio — non da visione artificiale. Su iOS tocca 'Abilita bussola'. Gli aerei in transito mostrano una linea verde verso il corpo celeste. Tocca un aereo per callsign e quota." },
-    "flightDetails": { "title": "Dettagli Volo", "desc": "Tocca un aereo nella mappa o in AR per dati ADS-B completi: altitudine, velocità, heading, variometro (▲▼), squawk, coordinate. Ogni campo ha un'icona 'i' con spiegazione. Se il volo è in database AirLabs vedrai anche compagnia, aeroporto di partenza/arrivo e stato del volo." }
+    "flightDetails": { "title": "Dettagli Volo", "desc": "Tocca un aereo nella mappa o in AR per dati ADS-B completi: altitudine, velocità, heading, variometro (▲▼), squawk, coordinate. Ogni campo ha un'icona 'i' con spiegazione. Se il volo è in database AirLabs vedrai anche compagnia, aeroporto di partenza/arrivo e stato del volo." },
+    "photoWindow": {
+      "title": "Finestra fotografica",
+      "desc": "Nelle impostazioni puoi definire quando ha senso fotografare un transito. I filtri si basano sull'elevazione — quanto è alta nel cielo la luna o il sole in quel momento.",
+      "moonExample1": "🌙 Luna a 40° alle 23:00 — ottimo: luna alta, cielo scuro, aereo illuminato dai fari.",
+      "moonExample2": "🌙 Luna a 5° alle 20:30 — sconsigliato: troppo bassa, oscurata dall'atmosfera e dalla foschia.",
+      "sunExample1": "☀️ Sole a 8° alle 07:15 — ottimo: luce dorata radente, colori caldi, aereo ben visibile.",
+      "sunExample2": "☀️ Sole a 35° alle 10:00 — sconsigliato: luce piatta e dura, foto poco suggestiva.",
+      "tip": "Regola la soglia in base alle tue condizioni locali: in montagna l'orizzonte è spesso libero e puoi tenere la luna anche a 5°; in città con molto smog conviene alzare la soglia."
+    }
   },
   "nav": {
     "monitor": "Monitor",

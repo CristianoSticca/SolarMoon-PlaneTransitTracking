@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   // Get users with background push enabled and recent GPS
   const { data: users, error } = await supabase
     .from('user_preferences')
-    .select('user_id, last_lat, last_lon, search_radius_km, angular_margin_deg, notification_lead_min')
+    .select('user_id, last_lat, last_lon, search_radius_km, angular_margin_deg, notification_lead_min, min_moon_elevation_deg, max_sun_elevation_deg')
     .eq('background_push_enabled', true)
     .not('last_lat', 'is', null)
     .not('last_lon', 'is', null)
@@ -61,6 +61,8 @@ export async function GET(req: NextRequest) {
     const radiusKm = (user.search_radius_km as number) ?? 25
     const marginDeg = (user.angular_margin_deg as number) ?? 0.5
     const leadSec = ((user.notification_lead_min as number) ?? 3) * 60
+    const minMoonElevationDeg = (user.min_moon_elevation_deg as number) ?? 10
+    const maxSunElevationDeg = (user.max_sun_elevation_deg as number) ?? 20
 
     // Force mode: send a test push without checking real transits
     if (force) {
@@ -89,7 +91,7 @@ export async function GET(req: NextRequest) {
         { lat, lon },
         moon,
         sun,
-        { marginDeg }
+        { marginDeg, minMoonElevationDeg, maxSunElevationDeg }
       )
 
       const imminent = events.filter(ev => ev.countdown <= leadSec)

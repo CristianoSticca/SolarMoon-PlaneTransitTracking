@@ -92,7 +92,7 @@ function AircraftPanel({ selected, onClose }: { selected: SelectedAircraft; onCl
   ].filter(Boolean) as { label: string; value: string }[]
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[1000] rounded-t-2xl backdrop-blur-md p-5 space-y-3 max-h-[65vh] overflow-y-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(6,14,26,0.96)' }}>
+    <div className="fixed bottom-0 left-0 right-0 z-[1000] rounded-t-2xl backdrop-blur-md p-5 space-y-3 max-h-[65vh] overflow-y-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(6,14,26,0.96)', paddingBottom: 'calc(20px + env(safe-area-inset-bottom))' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
@@ -276,12 +276,14 @@ export function MapView({ aircraft, transitEvents, lat, lon }: Props) {
   }, [aircraft, transitEvents, mapAircraft])
 
   return (
-    <div className="relative flex-1 rounded-xl overflow-hidden" style={{ minHeight: '400px' }}>
-      <div ref={mapRef} className="absolute inset-0" />
+    <>
+      <div className="relative flex-1 rounded-xl overflow-hidden" style={{ minHeight: '400px' }}>
+        <div ref={mapRef} className="absolute inset-0" />
+      </div>
       {selected && (
         <AircraftPanel selected={selected} onClose={() => setSelected(null)} />
       )}
-    </div>
+    </>
   )
 }
 

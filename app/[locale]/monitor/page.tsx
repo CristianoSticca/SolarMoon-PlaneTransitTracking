@@ -26,6 +26,8 @@ interface UserPrefs {
   angular_margin_deg: number
   notification_lead_min: number
   background_push_enabled: boolean
+  min_moon_elevation_deg: number
+  max_sun_elevation_deg: number
 }
 
 export default function MonitorPage() {
@@ -45,9 +47,15 @@ export default function MonitorPage() {
   useEffect(() => {
     createClient()
       .from('user_preferences')
-      .select('search_radius_km,angular_margin_deg,notification_lead_min,background_push_enabled')
+      .select('search_radius_km,angular_margin_deg,notification_lead_min,background_push_enabled,min_moon_elevation_deg,max_sun_elevation_deg')
       .single()
-      .then(({ data }) => { if (data) setPrefs(data) })
+      .then(({ data }) => {
+        if (data) setPrefs({
+          ...data,
+          min_moon_elevation_deg: data.min_moon_elevation_deg ?? 10,
+          max_sun_elevation_deg: data.max_sun_elevation_deg ?? 20,
+        })
+      })
   }, [])
 
   const geo = useGeolocation()
@@ -95,6 +103,8 @@ export default function MonitorPage() {
     lat: lat ?? 0,
     lon: lon ?? 0,
     marginDeg: prefs?.angular_margin_deg ?? DEFAULT_MARGIN,
+    minMoonElevationDeg: prefs?.min_moon_elevation_deg ?? 10,
+    maxSunElevationDeg: prefs?.max_sun_elevation_deg ?? 20,
   })
 
   // Session log — persists detected transits in sessionStorage

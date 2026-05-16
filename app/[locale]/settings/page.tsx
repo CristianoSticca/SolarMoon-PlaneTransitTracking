@@ -24,11 +24,15 @@ export default async function SettingsPage({
     .eq('user_id', user.id)
     .single()
 
-  const initialPrefs = prefs ?? {
+  const initialPrefs = {
     language: locale,
     search_radius_km: 25,
     angular_margin_deg: 0.5,
     notification_lead_min: 3,
+    background_push_enabled: false,
+    min_moon_elevation_deg: 10,
+    max_sun_elevation_deg: 20,
+    ...prefs,
   }
 
   return (

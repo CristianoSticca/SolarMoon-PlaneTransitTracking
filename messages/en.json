@@ -61,7 +61,11 @@
     "healthUnconfigured": "not configured",
     "healthError": "error",
     "bgPushTitle": "Background notifications",
-    "bgPushDesc": "Receive alerts even with the app closed. The server checks every minute."
+    "bgPushDesc": "Receive alerts even with the app closed. The server checks every minute.",
+    "moonElevationTitle": "Moon — minimum elevation",
+    "moonElevationHint": "Show lunar transits only when the moon is at least this high above the horizon. 0° is at the horizon, 45° is halfway up the sky.",
+    "sunElevationTitle": "Sun — maximum elevation",
+    "sunElevationHint": "Show solar transits only when the sun is still low (sunrise/sunset). At 20° you still get golden light; above 30° the light is too flat."
   },
   "guide": {
     "title": "How it works",
@@ -73,7 +77,16 @@
     "listReading": { "title": "How to read the List", "desc": "The green section shows real transits with a countdown. The grey 'Nearby aircraft' section shows all other aircraft with two values: 'now' is the current angular distance; 'min' is the minimum it will reach in the next 10 minutes. If 'min' drops below your margin, the aircraft moves to green." },
     "mapView": { "title": "Map View", "desc": "Geographic map showing all aircraft in the visible area. Yellow FR24-style icons — green if transiting. Zoom or pan and the search updates for the new area (up to 450 km). Tap any aircraft for callsign, altitude, speed, type, registration, vertical rate, squawk and — if available — airline, departure and arrival." },
     "arView": { "title": "AR View", "desc": "Live camera feed with aircraft, Moon and Sun overlaid at their real sky positions. Computed from the aircraft ADS-B GPS + your phone compass + gyroscope — not computer vision. On iOS tap 'Enable compass'. Transiting aircraft show a green dashed line toward their target. Tap an aircraft for a quick callsign and altitude popup." },
-    "flightDetails": { "title": "Flight Details", "desc": "Tap any aircraft on the map or in AR for full ADS-B data: altitude, speed, heading, vertical rate (▲▼), squawk and coordinates. Each field has an 'i' icon with an explanation. If the flight is in the AirLabs database you'll also see airline, departure/arrival airport and flight status." }
+    "flightDetails": { "title": "Flight Details", "desc": "Tap any aircraft on the map or in AR for full ADS-B data: altitude, speed, heading, vertical rate (▲▼), squawk and coordinates. Each field has an 'i' icon with an explanation. If the flight is in the AirLabs database you'll also see airline, departure/arrival airport and flight status." },
+    "photoWindow": {
+      "title": "Photo Window",
+      "desc": "In Settings you can define when it makes sense to photograph a transit. Filters are based on elevation — how high the moon or sun is in the sky at that moment.",
+      "moonExample1": "🌙 Moon at 40° at 11 PM — perfect: moon high, dark sky, aircraft lit by its own lights.",
+      "moonExample2": "🌙 Moon at 5° at 8:30 PM — not ideal: too low, obscured by haze and atmosphere.",
+      "sunExample1": "☀️ Sun at 8° at 7:15 AM — perfect: golden raking light, warm colours, aircraft well visible.",
+      "sunExample2": "☀️ Sun at 35° at 10:00 AM — not ideal: flat harsh light, less dramatic photo.",
+      "tip": "Adjust the threshold to your local conditions: in the mountains the horizon is often clear and you can keep the moon as low as 5°; in a hazy city it's worth raising the threshold."
+    }
   },
   "nav": {
     "monitor": "Monitor",

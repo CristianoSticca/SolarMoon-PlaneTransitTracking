@@ -73,9 +73,13 @@ export function detectTransits(
   observer: Observer,
   moon: CelestialPosition,
   sun: CelestialPosition,
-  options: { marginDeg: number }
+  options: { marginDeg: number; minMoonElevationDeg?: number; maxSunElevationDeg?: number }
 ): { events: TransitEvent[]; nearby: NearbyAircraft[] } {
-  const { marginDeg } = options
+  const { marginDeg, minMoonElevationDeg = 10, maxSunElevationDeg = 20 } = options
+
+  // Filter out targets outside the photo window
+  const moonVisible = moon.altitude >= minMoonElevationDeg
+  const sunVisible = sun.altitude >= 0 && sun.altitude <= maxSunElevationDeg
   const now = Date.now()
   const HORIZON_S = 600  // 10 minutes
   const STEP_S = 5
@@ -86,6 +90,8 @@ export function detectTransits(
     if (ac.altitudeFt < 1000) continue  // skip ground traffic
 
     for (const [target, celestial] of [['moon', moon], ['sun', sun]] as const) {
+      if (target === 'moon' && !moonVisible) continue
+      if (target === 'sun' && !sunVisible) continue
       let minSep = Infinity
       let contactSeconds = -1
       const currentSep = angularSeparation(aircraftAngularPos(observer, ac.lat, ac.lon, ac.altitudeFt), celestial)

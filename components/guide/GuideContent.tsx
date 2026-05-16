@@ -98,6 +98,28 @@ function ListExampleDiagram() {
   )
 }
 
+function PhotoWindowExamples({ t }: { t: ReturnType<typeof useTranslations<'guide'>> }) {
+  const examples = [
+    { text: t('photoWindow.moonExample1'), good: true },
+    { text: t('photoWindow.moonExample2'), good: false },
+    { text: t('photoWindow.sunExample1'), good: true },
+    { text: t('photoWindow.sunExample2'), good: false },
+  ]
+  return (
+    <div className="w-full space-y-2 text-left">
+      {examples.map((ex, i) => (
+        <div key={i} className="flex items-start gap-2 text-xs" style={{ color: ex.good ? '#4ade80' : '#8892a4' }}>
+          <span style={{ flexShrink: 0, marginTop: 1 }}>{ex.good ? '✓' : '✗'}</span>
+          <span>{ex.text}</span>
+        </div>
+      ))}
+      <div className="mt-3 text-xs leading-relaxed" style={{ color: '#8892a4', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 8 }}>
+        💡 {t('photoWindow.tip')}
+      </div>
+    </div>
+  )
+}
+
 export function GuideContent() {
   const t = useTranslations('guide')
 
@@ -150,6 +172,12 @@ export function GuideContent() {
         icon="✈"
         title={t('flightDetails.title')}
         desc={t('flightDetails.desc')}
+      />
+      <Section
+        icon="🌅"
+        title={t('photoWindow.title')}
+        desc={t('photoWindow.desc')}
+        visual={<PhotoWindowExamples t={t} />}
       />
     </div>
   )
