@@ -27,15 +27,24 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="rounded-2xl border border-white/15 bg-white/8 p-8 backdrop-blur-xl shadow-2xl">
-          <div className="mb-8 text-center">
-            <div className="text-5xl mb-3">🌙</div>
-            <h1 className="text-2xl font-bold">{tApp('name')}</h1>
-            <p className="text-white/50 text-sm mt-1">{tApp('tagline')}</p>
-          </div>
+        {/* Logo centrato */}
+        <div className="flex flex-col items-center gap-2 mb-8">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="#e8c848" strokeWidth="2" />
+            <circle cx="18" cy="18" r="5" fill="#e8c848" />
+          </svg>
+          <span style={{ fontSize: 14, letterSpacing: '0.22em', fontWeight: 600, color: '#e8eaf0', textTransform: 'uppercase' }}>
+            {tApp('name')}
+          </span>
+          <span style={{ fontSize: 11, color: '#8892a4' }}>{tApp('tagline')}</span>
+        </div>
 
+        <div
+          className="rounded-2xl p-8"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
           {status === 'sent' ? (
-            <p className="text-center text-green-400">{t('sent')}</p>
+            <p className="text-center" style={{ color: '#4ade80' }}>{t('sent')}</p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
@@ -44,31 +53,43 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder={t('emailPlaceholder')}
-                className="w-full rounded-xl border border-white/20 bg-white/8 px-4 py-3 text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8eaf0',
+                }}
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold hover:bg-violet-500 disabled:opacity-50 transition-colors"
+                className="w-full rounded-xl py-3 text-sm font-semibold transition-colors disabled:opacity-50"
+                style={{
+                  background: 'rgba(232,200,72,0.15)',
+                  border: '1px solid rgba(232,200,72,0.4)',
+                  color: '#e8c848',
+                }}
               >
                 {status === 'loading' ? '...' : t('submit')}
               </button>
               {status === 'error' && (
-                <p className="text-center text-red-400 text-xs">{t('error')}</p>
+                <p className="text-center text-xs" style={{ color: '#f87171' }}>{t('error')}</p>
               )}
             </form>
           )}
 
-          <p className="mt-6 text-center text-white/30 text-xs">{t('hint')}</p>
+          <p className="mt-6 text-center text-xs" style={{ color: '#8892a4' }}>{t('hint')}</p>
 
           <div className="mt-4 flex justify-center gap-2">
             {['it', 'en'].map(l => (
               <a
                 key={l}
                 href={`/${l}/login`}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  l === locale ? 'bg-violet-600 text-white' : 'text-white/40 hover:text-white/70'
-                }`}
+                className="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                style={l === locale
+                  ? { background: 'rgba(232,200,72,0.15)', border: '1px solid #e8c848', color: '#e8c848' }
+                  : { color: '#8892a4' }
+                }
               >
                 {l.toUpperCase()}
               </a>
