@@ -1,6 +1,6 @@
 {
-  "name": "SolarMoon",
-  "short_name": "SolarMoon",
+  "name": "AstroTransit",
+  "short_name": "AstroTransit",
   "description": "Track aircraft transits across Moon and Sun for astrophotography",
   "start_url": "/it",
   "display": "standalone",

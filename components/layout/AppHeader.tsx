@@ -11,10 +11,8 @@ export function AppHeader({ pageLabel, right }: Props) {
     >
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <circle cx="10" cy="10" r="9" fill="none" stroke="#e8c848" strokeWidth="1.5" />
-          <circle cx="10" cy="10" r="3" fill="#e8c848" />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/astrotransit-logo.png" alt="AstroTransit" width={28} height={28} style={{ display: 'block' }} />
         <span style={{
           fontSize: 12,
           letterSpacing: '0.2em',
@@ -22,7 +20,7 @@ export function AppHeader({ pageLabel, right }: Props) {
           color: '#e8eaf0',
           textTransform: 'uppercase',
         }}>
-          SolarMoon
+          AstroTransit
         </span>
       </div>
 

@@ -28,7 +28,7 @@ export async function POST(_req: NextRequest) {
       await webpush.sendNotification(
         subscription as webpush.PushSubscription,
         JSON.stringify({
-          title: '✈ Test SolarMoon',
+          title: '✈ Test AstroTransit',
           body: 'Le notifiche in background funzionano correttamente!',
           icon: '/icons/icon-192.png',
           badge: '/icons/icon-72.png',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
@@ -29,10 +30,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo centrato */}
         <div className="flex flex-col items-center gap-2 mb-8">
-          <svg width="36" height="36" viewBox="0 0 36 36">
-            <circle cx="18" cy="18" r="16" fill="none" stroke="#e8c848" strokeWidth="2" />
-            <circle cx="18" cy="18" r="5" fill="#e8c848" />
-          </svg>
+          <Image src="/astrotransit-logo.png" alt="AstroTransit" width={64} height={64} />
           <span style={{ fontSize: 14, letterSpacing: '0.22em', fontWeight: 600, color: '#e8eaf0', textTransform: 'uppercase' }}>
             {tApp('name')}
           </span>

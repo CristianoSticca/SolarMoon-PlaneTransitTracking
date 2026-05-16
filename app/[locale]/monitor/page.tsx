@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -17,6 +17,7 @@ const ARView = dynamic(() => import('@/components/monitor/ARView').then(m => m.A
 import { TransitAlert } from '@/components/monitor/TransitAlert'
 import { createClient } from '@/lib/supabase/client'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { getMoonInfo, getSunInfo } from '@/lib/astronomy/celestial'
 
 const DEFAULT_MARGIN = 0.5
 const DEFAULT_RADIUS = 25
@@ -131,6 +132,12 @@ export default function MonitorPage() {
     }
   }, [transitEvents, notify, prefs])
 
+  const celestial = useMemo(() => {
+    if (lat === null || lon === null) return null
+    const now = new Date()
+    return { moon: getMoonInfo(lat, lon, now), sun: getSunInfo(lat, lon, now) }
+  }, [lat, lon])
+
   async function handleLogout() {
     await createClient().auth.signOut()
     router.push(`/${locale}/login`)
@@ -168,6 +175,36 @@ export default function MonitorPage() {
           </button>
         </span>
       </div>
+
+      {/* Celestial cards */}
+      {celestial && (
+        <div className="px-4 pb-3 flex gap-2" style={{ position: 'relative', zIndex: 1 }}>
+          {[
+            { label: 'Luna', icon: celestial.moon.phaseIcon, pos: celestial.moon.position, times: celestial.moon.times },
+            { label: 'Sole', icon: '☀️', pos: celestial.sun.position, times: celestial.sun.times },
+          ].map(({ label, icon, pos, times }) => (
+            <div key={label} className="flex-1 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#e8c848', fontWeight: 600 }}>{icon} {label}</span>
+              </div>
+              <div className="flex gap-3 mb-2">
+                <div>
+                  <div style={{ fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8892a4' }}>AZ</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', color: '#e8eaf0' }}>{pos.azimuth.toFixed(1)}°</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8892a4' }}>EL</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', color: '#e8eaf0' }}>{pos.altitude.toFixed(1)}°</div>
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 6, display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'monospace', color: '#8892a4' }}>
+                <span>↑ <span style={{ color: '#e8c848' }}>{times.rise}</span></span>
+                <span>↓ <span style={{ color: '#e8c848' }}>{times.set}</span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* View tabs */}
       <div className="px-4 pb-3" style={{ position: 'relative', zIndex: 1 }}>
