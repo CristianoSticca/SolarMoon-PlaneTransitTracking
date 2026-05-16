@@ -28,23 +28,20 @@ export default async function LocaleLayout({
   const messages = await getMessages()
 
   return (
-    <html lang={locale}>
-      <body style={{ background: '#060e1a', color: '#e8eaf0', minHeight: '100dvh' }}>
-        <NextIntlClientProvider messages={messages}>
-          <StarBackground />
-          {/* padding-bottom leaves room for bottom nav (56px) + safe area */}
-          <div style={{ position: 'relative', zIndex: 1, paddingBottom: 'calc(56px + env(safe-area-inset-bottom))' }}>
-            {children}
-          </div>
-          <BottomNav locale={locale} />
-        </NextIntlClientProvider>
-        <Script id="a2hs" strategy="afterInteractive">{`
-          window.addEventListener('beforeinstallprompt', function(e) {
-            e.preventDefault();
-            window.__a2hsEvent = e;
-          });
-        `}</Script>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages}>
+      <StarBackground />
+      <div style={{ background: '#060e1a', color: '#e8eaf0', minHeight: '100dvh', position: 'relative' }}>
+        <div style={{ position: 'relative', zIndex: 1, paddingBottom: 'calc(56px + env(safe-area-inset-bottom))' }}>
+          {children}
+        </div>
+        <BottomNav locale={locale} />
+      </div>
+      <Script id="a2hs" strategy="afterInteractive">{`
+        window.addEventListener('beforeinstallprompt', function(e) {
+          e.preventDefault();
+          window.__a2hsEvent = e;
+        });
+      `}</Script>
+    </NextIntlClientProvider>
   )
 }

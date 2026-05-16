@@ -90,8 +90,8 @@ export function detectTransits(
     if (ac.altitudeFt < 1000) continue  // skip ground traffic
 
     for (const [target, celestial] of [['moon', moon], ['sun', sun]] as const) {
-      if (target === 'moon' && !moonVisible) continue
-      if (target === 'sun' && !sunVisible) continue
+      const photoWindowOk = target === 'moon' ? moonVisible : sunVisible
+
       let minSep = Infinity
       let contactSeconds = -1
       const currentSep = angularSeparation(aircraftAngularPos(observer, ac.lat, ac.lon, ac.altitudeFt), celestial)
@@ -107,7 +107,8 @@ export function detectTransits(
         if (sep > minSep + Math.max(marginDeg * 0.5, 0.3) && contactSeconds >= 0) break
       }
 
-      if (contactSeconds >= 0 && minSep < marginDeg) {
+      if (contactSeconds >= 0 && minSep < marginDeg && photoWindowOk) {
+        // Transit event — only shown when photo window conditions are met
         events.push({
           aircraft: ac,
           target,
@@ -116,6 +117,7 @@ export function detectTransits(
           minAngularSeparation: minSep,
         })
       } else {
+        // Nearby — always shown regardless of photo window
         nearby.push({
           aircraft: ac,
           target,

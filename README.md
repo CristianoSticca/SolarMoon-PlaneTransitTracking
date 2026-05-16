@@ -22,7 +22,9 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 - **Background push notifications** — server-side cron (cron-job.org, every minute) checks transits for opted-in users and sends push even with the app fully closed; kill switch in Settings
 - **2-provider fallback** — Airplanes.live → OpenSky Network, automatic failover
 - **API health check** — built-in panel in Settings to verify provider and AirLabs connectivity
-- **Configurable parameters** — search radius (10–450 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time
+- **Photo window** — filter transits by celestial elevation: minimum Moon elevation (for night transits) and maximum Sun elevation (for golden hour / sunrise / sunset); nearby aircraft always shown regardless of filter
+- **Configurable parameters** — search radius (10–450 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time, photo window thresholds
+- **Celestial info cards** — real-time Moon and Sun azimuth, elevation, rise/set times and moon phase icon on the monitor screen
 - **Screen wake lock** — keeps display on while monitoring
 - **Bilingual** — Italian and English (switch in settings)
 - **PWA** — installable on Android and iOS (16.4+) via "Add to Home Screen"
@@ -67,6 +69,8 @@ When enabled in Settings → "Notifiche in background":
 | Search radius | 25 km | Geographic area queried for aircraft (10–50 km via Settings; up to 450 km in Map view based on visible bounds) |
 | Angular margin | ±0.5° | Detection threshold (Moon/Sun diameter ≈ 0.5°) |
 | Notification lead | 3 min | How far in advance to send push alert |
+| Moon min elevation | 10° | Show lunar transits only when Moon is at least this high above the horizon |
+| Sun max elevation | 20° | Show solar transits only when Sun is below this elevation (golden hour / sunrise / sunset) |
 
 ---
 
@@ -75,7 +79,7 @@ When enabled in Settings → "Notifiche in background":
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 16 App Router (TypeScript) |
-| Styling | Tailwind CSS v4, glass morphism |
+| Styling | Tailwind CSS v4, navy+gold design system |
 | Auth | Supabase Auth (magic link) |
 | Database | Supabase (PostgreSQL) |
 | Astronomy | [suncalc](https://github.com/mourner/suncalc) — client-side, no external API |
@@ -127,9 +131,11 @@ Create `.env.local` with the variables listed above, then:
 
 ```bash
 npx web-push generate-vapid-keys   # generate VAPID keys
-# Apply both migrations in Supabase SQL Editor:
+# Apply all migrations in Supabase SQL Editor (in order):
 cat supabase/migrations/001_initial.sql
 cat supabase/migrations/002_background_push.sql
+cat supabase/migrations/003_explicit_grants.sql
+cat supabase/migrations/004_photo_window.sql
 npm run dev
 ```
 
@@ -156,7 +162,9 @@ user_preferences (
   last_lat float,                        -- last known GPS latitude (background push)
   last_lon float,                        -- last known GPS longitude (background push)
   last_seen_at timestamptz,              -- last time app was open with GPS active
-  background_push_enabled boolean DEFAULT false
+  background_push_enabled boolean DEFAULT false,
+  min_moon_elevation_deg int DEFAULT 10, -- photo window: minimum Moon elevation
+  max_sun_elevation_deg int DEFAULT 20   -- photo window: maximum Sun elevation (golden hour)
 )
 
 -- Web Push subscriptions
@@ -202,6 +210,7 @@ Vercel Hobby plan supports crons but only once per day, so the external cron is 
 
 ```
 app/
+  page.tsx          Landing page (public, bilingual IT/EN)
   [locale]/
     login/          Magic link login
     onboarding/     GPS + notifications + install prompt
@@ -252,6 +261,8 @@ supabase/
   migrations/
     001_initial.sql
     002_background_push.sql
+    003_explicit_grants.sql
+    004_photo_window.sql
 ```
 
 ---

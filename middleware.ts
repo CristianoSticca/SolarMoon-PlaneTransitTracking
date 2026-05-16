@@ -24,6 +24,9 @@ function checkRateLimit(userId: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Landing page — skip intl redirect so app/page.tsx renders directly
+  if (pathname === '/') return NextResponse.next()
+
   // Pass all API routes through (except rate-limited flights)
   if (pathname.startsWith('/api/') && pathname !== '/api/flights') {
     return NextResponse.next()

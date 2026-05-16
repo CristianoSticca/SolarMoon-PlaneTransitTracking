@@ -1,7 +1,7 @@
 {
   "name": "AstroTransit",
   "short_name": "AstroTransit",
-  "description": "Track aircraft transits across Moon and Sun for astrophotography",
+  "description": "AstroTransit — rileva aerei in transito davanti a Luna e Sole per l'astrofotografia",
   "start_url": "/it",
   "display": "standalone",
   "background_color": "#060e1a",

@@ -145,14 +145,14 @@ export default function MonitorPage() {
 
   return (
     <div className="flex flex-col" style={{ color: '#e8eaf0' }}>
-      <AppHeader
-        pageLabel="Monitor"
-        right={
-          geo.status === 'granted'
-            ? <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#8892a4', letterSpacing: '0.04em' }}>{geo.lat.toFixed(4)}° N · {geo.lon.toFixed(4)}° E</span>
-            : undefined
-        }
-      />
+      <AppHeader pageLabel="Monitor" />
+
+      {/* Coordinates */}
+      {geo.status === 'granted' && (
+        <div className="px-4 pb-1" style={{ position: 'relative', zIndex: 1, fontSize: 10, fontFamily: 'monospace', color: '#8892a4', letterSpacing: '0.04em' }}>
+          {geo.lat.toFixed(4)}° N · {geo.lon.toFixed(4)}° E
+        </div>
+      )}
 
       {/* Status bar */}
       <div className="px-4 pb-2 flex justify-between items-center" style={{ position: 'relative', zIndex: 1, fontSize: 9, color: '#8892a4', letterSpacing: '0.06em', fontFamily: 'monospace' }}>
