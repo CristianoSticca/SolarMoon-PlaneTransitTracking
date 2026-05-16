@@ -41,7 +41,7 @@ export function usePushNotifications(): {
 
   // On mount: try to silently re-save existing subscription (no new subscription attempt)
   useEffect(() => {
-    if (Notification.permission !== 'granted') return
+    if (!('Notification' in window) || Notification.permission !== 'granted') return
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
     navigator.serviceWorker.ready.then(async (registration) => {
       const existing = await registration.pushManager.getSubscription()
@@ -83,8 +83,7 @@ export function usePushNotifications(): {
 
   const notify = useCallback(
     (title: string, body: string) => {
-      // Check live permission — state may be stale if granted in a previous session
-      if (Notification.permission !== 'granted') return
+      if (!('Notification' in window) || Notification.permission !== 'granted') return
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification(title, {
           body,
