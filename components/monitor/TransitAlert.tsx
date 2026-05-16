@@ -23,19 +23,7 @@ export function TransitAlert({ event }: { event: TransitEvent | null }) {
     return () => clearInterval(id)
   }, [event])
 
-  if (!event) {
-    return (
-      <div
-        style={{
-          border: '1px solid rgba(255,255,255,0.07)',
-          background: 'rgba(255,255,255,0.04)',
-        }}
-        className="rounded-xl px-4 py-3 text-center text-sm"
-      >
-        <span style={{ color: '#8892a4' }}>{t('noTransits')}</span>
-      </div>
-    )
-  }
+  if (!event) return null
 
   const targetLabel = event.target === 'moon' ? `🌙 ${t('moon')}` : `☀️ ${t('sun')}`
   const isImminent = countdown < 60

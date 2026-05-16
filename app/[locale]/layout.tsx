@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import Script from 'next/script'
 import { StarBackground } from '@/components/layout/StarBackground'
 import { BottomNav } from '@/components/layout/BottomNav'
 
@@ -37,19 +38,12 @@ export default async function LocaleLayout({
           </div>
           <BottomNav locale={locale} />
         </NextIntlClientProvider>
-        <script dangerouslySetInnerHTML={{ __html: `
+        <Script id="a2hs" strategy="afterInteractive">{`
           window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
             window.__a2hsEvent = e;
           });
-          if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                console.error('SW registration failed:', err);
-              });
-            });
-          }
-        ` }} />
+        `}</Script>
       </body>
     </html>
   )

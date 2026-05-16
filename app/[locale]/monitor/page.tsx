@@ -36,7 +36,10 @@ export default function MonitorPage() {
   const router = useRouter()
   const [view, setView] = useState<'radar' | 'list' | 'map' | 'ar'>('radar')
   const [prefs, setPrefs] = useState<UserPrefs | null>(null)
+  const [mounted, setMounted] = useState(false)
   const { active: wakeLockActive, supported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock()
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Load user preferences from Supabase on mount
   useEffect(() => {
@@ -124,7 +127,7 @@ export default function MonitorPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ color: '#e8eaf0' }}>
+    <div className="flex flex-col" style={{ color: '#e8eaf0' }}>
       <AppHeader
         pageLabel="Monitor"
         right={
@@ -134,9 +137,26 @@ export default function MonitorPage() {
         }
       />
 
-      {/* ADS-B badge */}
-      <div className="px-4 pb-2" style={{ position: 'relative', zIndex: 1 }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(232,200,72,0.1)', border: '1px solid rgba(232,200,72,0.25)', color: '#e8c848', fontSize: 9, padding: '3px 10px', borderRadius: 20, letterSpacing: '0.08em', textTransform: 'uppercase' }}>⭐ ADS-B LIVE</span>
+      {/* Status bar */}
+      <div className="px-4 pb-2 flex justify-between items-center" style={{ position: 'relative', zIndex: 1, fontSize: 9, color: '#8892a4', letterSpacing: '0.06em', fontFamily: 'monospace' }}>
+        <span>
+          <span style={{ display: 'inline-block', width: 5, height: 5, background: flightData ? '#4ade80' : '#8892a4', borderRadius: '50%', marginRight: 4, verticalAlign: 'middle' }} />
+          {flightData ? `ADS-B · ${flightData.aircraft?.length ?? 0} contacts` : 'ADS-B · connecting…'}
+        </span>
+        <span className="flex items-center gap-3">
+          {mounted && wakeLockSupported && (
+            <button
+              onClick={toggleWakeLock}
+              title={wakeLockActive ? 'Screen lock on' : 'Screen lock off'}
+              style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, border: `1px solid ${wakeLockActive ? 'rgba(232,200,72,0.4)' : 'rgba(136,146,164,0.3)'}`, background: wakeLockActive ? 'rgba(232,200,72,0.1)' : 'transparent', color: wakeLockActive ? '#e8c848' : '#8892a4', letterSpacing: '0.06em', cursor: 'pointer' }}
+            >
+              {wakeLockActive ? '◉ AWAKE' : '◎ SLEEP'}
+            </button>
+          )}
+          <button onClick={handleLogout} style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, border: '1px solid rgba(136,146,164,0.3)', background: 'transparent', color: '#8892a4', letterSpacing: '0.06em', cursor: 'pointer' }}>
+            SIGN OUT
+          </button>
+        </span>
       </div>
 
       {/* View tabs */}
@@ -207,46 +227,6 @@ export default function MonitorPage() {
         <TransitAlert event={transitEvents[0] ?? null} />
       )}
 
-      {/* Status bar */}
-      <div className="px-4 py-2 flex justify-between items-center" style={{ position: 'relative', zIndex: 1, fontSize: 9, color: '#8892a4', letterSpacing: '0.06em', fontFamily: 'monospace' }}>
-        <span><span style={{ display: 'inline-block', width: 5, height: 5, background: '#4ade80', borderRadius: '50%', marginRight: 4, verticalAlign: 'middle' }} />ADS-B FEED</span>
-        <span className="flex items-center gap-3">
-          {flightData && <span>{flightData.aircraft?.length ?? 0} contacts · upd 3s</span>}
-          {wakeLockSupported && (
-            <button
-              onClick={toggleWakeLock}
-              title={wakeLockActive ? 'Screen lock on' : 'Screen lock off'}
-              style={{
-                fontSize: 9,
-                padding: '2px 8px',
-                borderRadius: 10,
-                border: `1px solid ${wakeLockActive ? 'rgba(232,200,72,0.4)' : 'rgba(136,146,164,0.3)'}`,
-                background: wakeLockActive ? 'rgba(232,200,72,0.1)' : 'transparent',
-                color: wakeLockActive ? '#e8c848' : '#8892a4',
-                letterSpacing: '0.06em',
-                cursor: 'pointer',
-              }}
-            >
-              {wakeLockActive ? '◉ AWAKE' : '◎ SLEEP'}
-            </button>
-          )}
-          <button
-            onClick={handleLogout}
-            style={{
-              fontSize: 9,
-              padding: '2px 8px',
-              borderRadius: 10,
-              border: '1px solid rgba(136,146,164,0.3)',
-              background: 'transparent',
-              color: '#8892a4',
-              letterSpacing: '0.06em',
-              cursor: 'pointer',
-            }}
-          >
-            SIGN OUT
-          </button>
-        </span>
-      </div>
     </div>
   )
 }
