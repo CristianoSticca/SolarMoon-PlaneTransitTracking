@@ -22,13 +22,15 @@ function checkRateLimit(userId: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
   // Pass all API routes through (except rate-limited flights)
-  if (request.nextUrl.pathname.startsWith('/api/') && request.nextUrl.pathname !== '/api/flights') {
+  if (pathname.startsWith('/api/') && pathname !== '/api/flights') {
     return NextResponse.next()
   }
 
   // Rate limit the flights API
-  if (request.nextUrl.pathname === '/api/flights') {
+  if (pathname === '/api/flights') {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
