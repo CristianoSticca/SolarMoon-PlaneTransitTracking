@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { Target } from '@/lib/simulator/types'
 
 type Props = {
@@ -7,16 +8,16 @@ type Props = {
   onChange: (t: Target) => void
 }
 
-const OPTIONS: { id: Target; icon: string; label: string; sub: string }[] = [
-  { id: 'moon', icon: '🌕', label: 'Luna', sub: 'Diametro apparente ~0.50°' },
-  { id: 'sun',  icon: '☀️', label: 'Sole', sub: 'Diametro apparente ~0.53°' },
-]
-
 export function StepTarget({ value, onChange }: Props) {
+  const t = useTranslations('guide.simulator')
+  const OPTIONS: { id: Target; icon: string; label: string; sub: string }[] = [
+    { id: 'moon', icon: '🌕', label: t('moonLabel'), sub: t('moonSub') },
+    { id: 'sun',  icon: '☀️', label: t('sunLabel'),  sub: t('sunSub') },
+  ]
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-xl font-bold tracking-tight">Cosa stai fotografando?</h2>
-      <p className="text-sm" style={{ color: '#6a6070' }}>Seleziona il soggetto del transito</p>
+      <h2 className="text-xl font-bold tracking-tight">{t('stepTarget')}</h2>
+      <p className="text-sm" style={{ color: '#6a6070' }}>{t('stepTargetSub')}</p>
       {OPTIONS.map(opt => (
         <button
           key={opt.id}

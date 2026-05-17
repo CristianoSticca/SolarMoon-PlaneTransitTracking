@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { StepTarget }  from './steps/StepTarget'
 import { StepCamera }  from './steps/StepCamera'
 import { StepFocal }   from './steps/StepFocal'
@@ -8,8 +9,6 @@ import { StepPreview } from './steps/StepPreview'
 import type { SimulatorState } from '@/lib/simulator/types'
 
 const TOTAL_STEPS = 4
-
-const STEP_TITLES = ['FOV Simulator', 'Camera', 'Focale & Aereo', 'Preview']
 
 const DEFAULT_STATE: SimulatorState = {
   target:     'moon',
@@ -19,6 +18,8 @@ const DEFAULT_STATE: SimulatorState = {
 }
 
 export function FovSimulator() {
+  const t = useTranslations('guide.simulator')
+  const STEP_TITLES = t.raw('stepTitles') as string[]
   const [step, setState_step] = useState(1)
   const [state, setState] = useState<SimulatorState>(DEFAULT_STATE)
 
@@ -53,7 +54,7 @@ export function FovSimulator() {
           className="ml-auto rounded-full px-3 py-0.5 text-xs"
           style={{ background: '#0e0e1c', border: '1px solid #1e1e2e', color: '#6a6070' }}
         >
-          Passo {step} di {TOTAL_STEPS}
+          {t('stepOf').replace('{step}', String(step)).replace('{total}', String(TOTAL_STEPS))}
         </span>
       </div>
 

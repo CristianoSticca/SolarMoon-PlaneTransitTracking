@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { FovCanvas } from '../FovCanvas'
 import { fovDeg, angularSizeDeg, pixelSpan } from '@/lib/simulator/fov'
 import { CAMERAS, AIRCRAFT } from '@/lib/simulator/data'
@@ -9,13 +10,7 @@ import type { SimulatorState } from '@/lib/simulator/types'
 const CANVAS_W = 700
 const DIST_KM  = 10
 
-const FOV_CATEGORIES = [
-  { max: 2,   label: 'Astro',      color: '#c060e0' },
-  { max: 4,   label: 'Super-tele', color: '#c8b870' },
-  { max: 8,   label: 'Tele',       color: '#70b0d8' },
-  { max: 20,  label: 'Normale',    color: '#70c870' },
-  { max: 999, label: 'Wide',       color: '#c87070' },
-]
+const FOV_CATEGORY_COLORS = ['#c060e0', '#c8b870', '#70b0d8', '#70c870', '#c87070']
 
 type Props = {
   state: SimulatorState
@@ -23,6 +18,13 @@ type Props = {
 }
 
 export function StepPreview({ state, onEdit }: Props) {
+  const t = useTranslations('guide.simulator')
+  const FOV_CATEGORY_LABELS = ['Astro', 'Super-tele', 'Tele', t('fovNormal'), 'Wide']
+  const FOV_CATEGORIES = FOV_CATEGORY_COLORS.map((color, i) => ({
+    max:   [2, 4, 8, 20, 999][i],
+    label: FOV_CATEGORY_LABELS[i],
+    color,
+  }))
   const [planeX, setPlaneX] = useState(0.5)
   const [animating, setAnimating] = useState(false)
   const rafRef    = useRef<number | null>(null)
@@ -43,10 +45,10 @@ export function StepPreview({ state, onEdit }: Props) {
   // Fit badge
   const acPct    = acSpanPx / CANVAS_W
   const fitColor = acPct > 1.0 ? '#e05050' : acPct > 0.85 ? '#ffb040' : '#00c878'
-  const fitTitle = acPct > 1.0 ? '✗ Fuori dal frame' : acPct > 0.85 ? '⚠ Margine ridotto' : '✓ Aereo nel frame'
+  const fitTitle = acPct > 1.0 ? t('fitBad') : acPct > 0.85 ? t('fitWarn') : t('fitOk')
   const fitSub   = acPct > 1.0
-    ? "Riduci la focale per includere l'aereo"
-    : `L'aereo occupa ${((acSpanPx / CANVAS_W) * 100).toFixed(0)}% del frame`
+    ? t('fitBadSub')
+    : t('fitOkSub').replace('{pct}', ((acSpanPx / CANVAS_W) * 100).toFixed(0))
 
   // Animation
   const startAnimation = useCallback(() => {
@@ -77,15 +79,15 @@ export function StepPreview({ state, onEdit }: Props) {
 
   // Summary
   const summaryItems = [
-    { label: 'Soggetto', value: state.target === 'moon' ? 'Luna' : 'Sole', step: 1 },
-    { label: 'Camera',   value: cam.name,                                    step: 2 },
-    { label: 'Focale',   value: `${state.focalMm}mm (${Math.round(state.focalMm * cam.cropFactor)}mm equiv.)`, step: 3 },
-    { label: 'Aereo',    value: ac.name,                                     step: 3 },
+    { label: t('summarySubject'), value: state.target === 'moon' ? t('moonLabel') : t('sunLabel'), step: 1 },
+    { label: t('summaryCamera'),  value: cam.name,                                                  step: 2 },
+    { label: t('summaryFocal'),   value: `${state.focalMm}mm (${Math.round(state.focalMm * cam.cropFactor)}mm equiv.)`, step: 3 },
+    { label: t('summaryAircraft'), value: ac.name,                                                 step: 3 },
   ]
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-xl font-bold tracking-tight">Preview del tuo scatto</h2>
+      <h2 className="text-xl font-bold tracking-tight">{t('stepPreview')}</h2>
 
       {/* Canvas */}
       <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -113,7 +115,7 @@ export function StepPreview({ state, onEdit }: Props) {
         >
           <span className="block text-base font-bold" style={{ color: '#c8b870' }}>{fovH.toFixed(1)}°</span>
           <span className="mt-1 block text-xs font-semibold" style={{ color: fovCat.color }}>{fovCat.label}</span>
-          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>campo</span>
+          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>{t('statField')}</span>
         </div>
         {/* Luna */}
         <div
@@ -121,8 +123,8 @@ export function StepPreview({ state, onEdit }: Props) {
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <span className="block text-base font-bold" style={{ color: '#c8b870' }}>{Math.round(bodyPx)}px</span>
-          <span className="mt-1 block text-xs" style={{ color: '#6a6070' }}>{lunaPct}% del frame</span>
-          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>luna</span>
+          <span className="mt-1 block text-xs" style={{ color: '#6a6070' }}>{lunaPct}{t('ofFrame')}</span>
+          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>{t('statMoon')}</span>
         </div>
         {/* Aereo vs Luna */}
         <div
@@ -130,8 +132,8 @@ export function StepPreview({ state, onEdit }: Props) {
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <span className="block text-base font-bold" style={{ color: acVsColor }}>{acVsLuna}%</span>
-          <span className="mt-1 block text-xs" style={{ color: '#6a6070' }}>del disco lunare</span>
-          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>aereo</span>
+          <span className="mt-1 block text-xs" style={{ color: '#6a6070' }}>{t('ofDisk')}</span>
+          <span className="mt-0.5 block text-xs uppercase tracking-wide" style={{ color: '#4a4050' }}>{t('statAircraft')}</span>
         </div>
       </div>
 
@@ -146,7 +148,7 @@ export function StepPreview({ state, onEdit }: Props) {
         }}
       >
         <span>{animating ? '⏸' : '▶'}</span>
-        <span>{animating ? 'Pausa' : 'Anima il transito'}</span>
+        <span>{animating ? t('pauseBtn') : t('animateBtn')}</span>
       </button>
 
       {/* Summary card */}
@@ -167,7 +169,7 @@ export function StepPreview({ state, onEdit }: Props) {
               className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
               style={{ background: 'rgba(200,184,112,0.1)', color: '#c8b870' }}
             >
-              modifica
+              {t('editBtn')}
             </button>
           </div>
         ))}

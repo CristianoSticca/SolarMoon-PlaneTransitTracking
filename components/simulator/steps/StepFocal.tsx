@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { AIRCRAFT } from '@/lib/simulator/data'
 
 const FOCAL_PRESETS = [200, 400, 600, 800, 1000, 1200]
@@ -16,10 +17,11 @@ type Props = {
 }
 
 export function StepFocal({ focalMm, aircraftId, onFocalChange, onAircraftChange }: Props) {
+  const t = useTranslations('guide.simulator')
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold tracking-tight">Focale e aereo</h2>
-      <p className="text-sm" style={{ color: '#6a6070' }}>Scegli la focale e il tipo di aereo</p>
+      <h2 className="text-xl font-bold tracking-tight">{t('stepFocal')}</h2>
+      <p className="text-sm" style={{ color: '#6a6070' }}>{t('stepFocalSub')}</p>
 
       {/* Focal presets grid */}
       <div className="grid grid-cols-3 gap-2">
@@ -47,7 +49,7 @@ export function StepFocal({ focalMm, aircraftId, onFocalChange, onAircraftChange
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
       >
         <div className="mb-2 text-xs" style={{ color: '#6a6070' }}>
-          Focale personalizzata —{' '}
+          {t('customFocal')} —{' '}
           <span style={{ color: '#c8b870' }}>{focalMm}mm</span>
         </div>
         <input
@@ -62,7 +64,7 @@ export function StepFocal({ focalMm, aircraftId, onFocalChange, onAircraftChange
       </div>
 
       {/* Aircraft */}
-      <p className="text-sm" style={{ color: '#6a6070' }}>Tipo di aereo</p>
+      <p className="text-sm" style={{ color: '#6a6070' }}>{t('aircraftType')}</p>
       {AIRCRAFT.map(ac => (
         <button
           key={ac.id}
@@ -77,7 +79,7 @@ export function StepFocal({ focalMm, aircraftId, onFocalChange, onAircraftChange
           <div className="flex-1">
             <div className="text-sm font-semibold" style={{ color: '#e8e0d0' }}>{ac.name}</div>
             <div className="mt-0.5 text-xs" style={{ color: '#6a6070' }}>
-              Apertura alare {ac.wingspan}m · Lunghezza {ac.length}m
+              {t('wingspanLabel')} {ac.wingspan}m · {t('lengthLabel')} {ac.length}m
             </div>
           </div>
           <span

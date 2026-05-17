@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { CAMERAS } from '@/lib/simulator/data'
 import type { CameraId } from '@/lib/simulator/types'
 
@@ -13,10 +14,11 @@ const ICONS: Record<CameraId, string> = {
 }
 
 export function StepCamera({ value, onChange }: Props) {
+  const t = useTranslations('guide.simulator')
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-xl font-bold tracking-tight">Che corpo macchina usi?</h2>
-      <p className="text-sm" style={{ color: '#6a6070' }}>Il sensore determina il campo inquadrato</p>
+      <h2 className="text-xl font-bold tracking-tight">{t('stepCamera')}</h2>
+      <p className="text-sm" style={{ color: '#6a6070' }}>{t('stepCameraSub')}</p>
       {CAMERAS.map(cam => (
         <button
           key={cam.id}
