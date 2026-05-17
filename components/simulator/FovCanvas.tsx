@@ -156,54 +156,68 @@ function drawAircraft(
 ) {
   ctx.save()
   ctx.translate(x, y)
-  const bH = spanPx * 0.055
-  const wH = spanPx * 0.065
-  ctx.shadowColor = 'rgba(0,0,0,0.8)'
-  ctx.shadowBlur = 8
 
-  // Fuselage
-  ctx.fillStyle = '#c0b8b8'
-  ctx.beginPath()
-  ctx.moveTo(-lenPx / 2, -bH / 2)
-  ctx.bezierCurveTo(-lenPx / 2 + lenPx * 0.06, -bH * 1.1, lenPx * 0.25, -bH * 1.1, lenPx / 2, -bH * 0.3)
-  ctx.bezierCurveTo(lenPx / 2 + lenPx * 0.02, 0, lenPx / 2, bH * 0.3, lenPx / 2 - lenPx * 0.06, bH * 0.5)
-  ctx.bezierCurveTo(lenPx * 0.25, bH, -lenPx * 0.25, bH, -lenPx / 2, bH / 2)
-  ctx.closePath()
-  ctx.fill()
+  // fuselage half-width (perpendicular to flight axis)
+  const fw = Math.max(3, spanPx * 0.062)
 
-  // Wings (top + bottom)
-  ;([-1, 1] as number[]).forEach(sy => {
-    ctx.fillStyle = '#a8a0a0'
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'
+  ctx.shadowBlur = 6
+
+  // ── Main wings (drawn first, fuselage overlaps root) ──────────────────────
+  // Nose points RIGHT (+x). Wings sweep back: tips are behind root in -x.
+  ;([-1, 1] as number[]).forEach(s => {
+    ctx.fillStyle = '#a8a2a2'
     ctx.beginPath()
-    ctx.moveTo(-lenPx * 0.05, 0)
-    ctx.lineTo(lenPx * 0.18, 0)
-    ctx.lineTo(spanPx * 0.46, wH * 2.2 * sy)
-    ctx.lineTo(spanPx * 0.46, wH * 3.2 * sy)
-    ctx.lineTo(lenPx * 0.04, wH * 1.5 * sy)
+    ctx.moveTo(lenPx * 0.14,  -fw * s)              // root leading edge
+    ctx.lineTo(-lenPx * 0.02, -spanPx * 0.50 * s)   // tip leading edge (swept back)
+    ctx.lineTo(-lenPx * 0.16, -spanPx * 0.50 * s)   // tip trailing edge
+    ctx.lineTo(-lenPx * 0.16, -fw * s)               // root trailing edge
     ctx.closePath()
     ctx.fill()
   })
 
-  // Tail fin
-  ctx.fillStyle = '#9898a0'
+  // ── Horizontal stabilizers (at tail) ─────────────────────────────────────
+  ;([-1, 1] as number[]).forEach(s => {
+    ctx.fillStyle = '#9898a2'
+    ctx.beginPath()
+    ctx.moveTo(-lenPx * 0.34, -fw * 0.65 * s)
+    ctx.lineTo(-lenPx * 0.42, -spanPx * 0.21 * s)
+    ctx.lineTo(-lenPx * 0.50, -spanPx * 0.21 * s)
+    ctx.lineTo(-lenPx * 0.50, -fw * 0.65 * s)
+    ctx.closePath()
+    ctx.fill()
+  })
+
+  // ── Engine nacelles (one per wing) ────────────────────────────────────────
+  ;([-1, 1] as number[]).forEach(s => {
+    ctx.fillStyle = '#686070'
+    ctx.beginPath()
+    ctx.ellipse(lenPx * 0.06, spanPx * 0.30 * s, lenPx * 0.085, fw * 0.50, 0, 0, Math.PI * 2)
+    ctx.fill()
+    // intake ring highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.ellipse(lenPx * 0.12, spanPx * 0.30 * s, fw * 0.38, fw * 0.38, 0, 0, Math.PI * 2)
+    ctx.stroke()
+  })
+
+  // ── Fuselage (nose → right, tail → left) ─────────────────────────────────
+  ctx.fillStyle = '#c6bebf'
   ctx.beginPath()
-  ctx.moveTo(lenPx * 0.34, -bH * 0.3)
-  ctx.lineTo(lenPx * 0.48, -bH * 3.5)
-  ctx.lineTo(lenPx * 0.5, -bH * 4)
-  ctx.lineTo(lenPx * 0.28, -bH * 0.7)
+  ctx.moveTo(lenPx * 0.50, 0)                                        // nose tip
+  ctx.bezierCurveTo( lenPx * 0.46, -fw,  lenPx * 0.18, -fw, -lenPx * 0.28, -fw * 0.88)
+  ctx.bezierCurveTo(-lenPx * 0.43, -fw * 0.68, -lenPx * 0.50, -fw * 0.32, -lenPx * 0.50, 0)
+  ctx.bezierCurveTo(-lenPx * 0.50,  fw * 0.32, -lenPx * 0.43,  fw * 0.68, -lenPx * 0.28,  fw * 0.88)
+  ctx.bezierCurveTo( lenPx * 0.18,  fw,  lenPx * 0.46,  fw,  lenPx * 0.50, 0)
   ctx.closePath()
   ctx.fill()
 
-  // Engine pods (×4, symmetrical)
-  ;[0.18, 0.30].forEach(ef => {
-    const ev = ef === 0.18 ? 1.3 : 2.0
-    ;([-1, 1] as number[]).forEach(s => {
-      ctx.fillStyle = '#707070'
-      ctx.beginPath()
-      ctx.ellipse(lenPx * 0.03 + spanPx * ef * 0.28, wH * ev * s, lenPx * 0.055, bH * 0.65, 0, 0, Math.PI * 2)
-      ctx.fill()
-    })
-  })
+  // ── Cockpit windows (tinted, near nose) ───────────────────────────────────
+  ctx.fillStyle = 'rgba(160,215,255,0.32)'
+  ctx.beginPath()
+  ctx.ellipse(lenPx * 0.36, 0, lenPx * 0.07, fw * 0.44, 0, 0, Math.PI * 2)
+  ctx.fill()
 
   ctx.shadowBlur = 0
   ctx.restore()
