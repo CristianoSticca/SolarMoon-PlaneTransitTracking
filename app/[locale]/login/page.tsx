@@ -107,8 +107,8 @@ export default function LoginPage() {
                 inputMode="numeric"
                 required
                 value={code}
-                onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
+                onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                placeholder="00000000"
                 className="w-full rounded-xl px-4 py-3 text-center text-2xl tracking-[0.4em] font-semibold focus:outline-none"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
@@ -118,7 +118,7 @@ export default function LoginPage() {
               />
               <button
                 type="submit"
-                disabled={loading || code.length < 6}
+                disabled={loading || code.length < 8}
                 className="w-full rounded-xl py-3 text-sm font-semibold transition-colors disabled:opacity-50"
                 style={{
                   background: 'rgba(232,200,72,0.15)',

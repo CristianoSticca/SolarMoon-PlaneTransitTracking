@@ -44,7 +44,7 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 
 ## How it works
 
-1. Open the app and log in with your email (magic link, no password)
+1. Open the app and log in with your email (6-digit OTP code, no password)
 2. Grant GPS permission
 3. The app queries flight APIs every 20 seconds for aircraft within your search radius
 4. For each aircraft, it projects the trajectory forward in 5-second steps
@@ -80,7 +80,7 @@ When enabled in Settings → "Notifiche in background":
 |---|---|
 | Framework | Next.js 16 App Router (TypeScript) |
 | Styling | Tailwind CSS v4, navy+gold design system |
-| Auth | Supabase Auth (magic link) |
+| Auth | Supabase Auth (OTP code via email) |
 | Database | Supabase (PostgreSQL) |
 | Astronomy | [suncalc](https://github.com/mourner/suncalc) — client-side, no external API |
 | Flight data | Airplanes.live, OpenSky Network (free, no key required) |
@@ -212,7 +212,7 @@ Vercel Hobby plan supports crons but only once per day, so the external cron is 
 app/
   page.tsx          Landing page (public, bilingual IT/EN)
   [locale]/
-    login/          Magic link login
+    login/          OTP code login (8-digit code via email)
     onboarding/     GPS + notifications + install prompt
     monitor/        Main radar/list/map/AR screen
     settings/       User preferences + background push toggle
