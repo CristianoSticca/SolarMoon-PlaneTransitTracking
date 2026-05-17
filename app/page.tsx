@@ -315,7 +315,7 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <S style={{ paddingTop: 120, paddingBottom: 56 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'center' }}>
+        <div className="hero-grid" style={{ display: 'grid', gap: 40 }}>
           <div>
             <div style={{ marginBottom: 18 }}>
               <span style={{
@@ -343,8 +343,7 @@ export default function LandingPage() {
               }}>{t.ctaSub}</a>
             </div>
           </div>
-          {/* iPhone mockup — hidden on narrow screens via inline media query workaround */}
-          <div style={{ display: 'flex', justifyContent: 'center' }} className="hero-phone">
+          <div className="hero-phone">
             <PhoneMockup countdown={countdown} />
           </div>
         </div>
@@ -612,7 +611,14 @@ export default function LandingPage() {
       </S>
 
       {/* hide phone mockup on narrow screens */}
-      <style>{`.hero-phone { display: flex } @media (max-width: 600px) { .hero-phone { display: none } }`}</style>
+      <style>{`
+        .hero-grid { grid-template-columns: 1fr auto; align-items: center; }
+        .hero-phone { display: flex; justify-content: center; }
+        @media (max-width: 640px) {
+          .hero-grid { grid-template-columns: 1fr; }
+          .hero-phone { order: 2; padding-bottom: 8px; }
+        }
+      `}</style>
     </div>
   )
 }
