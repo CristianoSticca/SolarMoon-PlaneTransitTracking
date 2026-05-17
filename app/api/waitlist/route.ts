@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
     })
 
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: `"AstroTransit" <${process.env.SMTP_USER}>`,
       to: 'info@cristianosticca.com',
       subject: `[AstroTransit] Nuova iscrizione waitlist: ${email}`,
-      text: `Nuova email in waitlist: ${email}\n\nData: ${new Date().toISOString()}`,
+      text: `Nuova email in waitlist per AstroTransit: ${email}\n\nData: ${new Date().toISOString()}`,
     })
   } catch (mailError) {
     // Log but don't fail the request — DB insert succeeded
