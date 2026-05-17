@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOV Simulator — Prototype C</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #07070f;
+      --surface: #0e0e1c;
+      --surface2: #14141e;
+      --border: #1e1e2e;
+      --text: #d8d0c0;
+      --muted: #6a6070;
+      --gold: #c8b870;
+      --gold-dim: rgba(200,184,112,0.12);
+      --green: #00c878;
+      --amber: #ffb040;
+      --red: #e05050;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      /* mobile frame simulation */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── PHONE SHELL ─────────────────────────────────────────────────────── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 48px;
+      box-shadow: 0 0 0 2px #1e1e2e, 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #2a2a3a;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* notch */
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 30px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+
+    .phone-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding-top: 58px; /* space for notch */
+    }
+
+    /* ── STATUS BAR ──────────────────────────────────────────────────────── */
+    .statusbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      height: 34px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    /* ── NAV HEADER ──────────────────────────────────────────────────────── */
+    .nav {
+      display: flex;
+      align-items: center;
+      padding: 8px 20px 12px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-back {
+      width: 32px; height: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .nav h1 { font-size: 17px; font-weight: 600; }
+    .nav .step-tag {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── STEP PROGRESS ───────────────────────────────────────────────────── */
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 20px 16px;
+      flex-shrink: 0;
+    }
+
+    .dot {
+      height: 4px;
+      border-radius: 2px;
+      transition: all 0.3s;
+      background: var(--surface2);
+    }
+
+    .dot.done  { background: var(--gold); opacity: 0.5; }
+    .dot.active { background: var(--gold); width: 24px; }
+    .dot.next  { width: 8px; }
+
+    /* ── SCROLL CONTENT ──────────────────────────────────────────────────── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 20px;
+    }
+
+    /* hide scrollbar */
+    .content::-webkit-scrollbar { display: none; }
+
+    /* ── STEP SCREENS ─────────────────────────────────────────────────────── */
+    .screen { display: none; flex-direction: column; gap: 12px; animation: fadeIn 0.25s ease; }
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .screen-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; padding-top: 4px; }
+    .screen-sub   { font-size: 14px; color: var(--muted); margin-top: -6px; margin-bottom: 4px; }
+
+    /* ── OPTION CARDS ─────────────────────────────────────────────────────── */
+    .option-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .option-card:active { transform: scale(0.98); }
+
+    .option-card.selected {
+      border-color: var(--gold);
+      background: var(--gold-dim);
+    }
+
+    .option-card .icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .option-card .info { flex: 1; }
+    .option-card .info .name { font-size: 15px; font-weight: 600; }
+    .option-card .info .sub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .option-card .check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: transparent;
+      transition: all 0.2s;
+    }
+
+    .option-card.selected .check {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+    }
+
+    /* ── FOCAL STEP ──────────────────────────────────────────────────────── */
+    .focal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .focal-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .focal-btn:active { transform: scale(0.96); }
+
+    .focal-btn.selected {
+      border-color: var(--gold);
+      background: var(--gold-dim);
+    }
+
+    .focal-btn .mm {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+
+    .focal-btn .label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      display: block;
+    }
+
+    .focal-custom {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 0;
+    }
+
+    .focal-custom label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 8px; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(200,184,112,0.5);
+    }
+
+    .slider-val {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 8px;
+    }
+
+    /* ── PREVIEW STEP ────────────────────────────────────────────────────── */
+    .preview-canvas-wrap {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+
+    #fovCanvas { width: 100%; height: auto; display: block; }
+
+    .preview-badge {
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .preview-badge.good    { background: rgba(0,200,120,0.1);  border: 1px solid rgba(0,200,120,0.3);  color: var(--green); }
+    .preview-badge.warning { background: rgba(255,176,64,0.1); border: 1px solid rgba(255,176,64,0.3); color: var(--amber); }
+    .preview-badge.bad     { background: rgba(224,80,80,0.1);  border: 1px solid rgba(224,80,80,0.3);  color: var(--red); }
+
+    .preview-badge .bdot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    .preview-badge .btext { font-size: 13px; font-weight: 500; }
+    .preview-badge .bsub  { font-size: 11px; opacity: 0.8; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .stat-pill .sv { font-size: 16px; font-weight: 700; color: var(--gold); display: block; }
+    .stat-pill .sc { font-size: 11px; font-weight: 600; margin-top: 3px; display: block; }
+    .stat-pill .sk { font-size: 10px; color: var(--muted); margin-top: 2px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .play-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .play-btn.ready {
+      border-color: rgba(100,100,200,0.5);
+      color: #a0a0e0;
+      background: rgba(60,60,140,0.15);
+    }
+
+    .play-btn.playing {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(255,176,64,0.08);
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .sk { color: var(--muted); }
+    .summary-row .sv { font-weight: 500; }
+
+    .summary-row .edit-btn {
+      font-size: 11px;
+      color: var(--gold);
+      cursor: pointer;
+      padding: 2px 8px;
+      background: var(--gold-dim);
+      border-radius: 20px;
+    }
+
+    /* ── BOTTOM CTA ──────────────────────────────────────────────────────── */
+    .bottom-cta {
+      padding: 12px 20px 24px;
+      flex-shrink: 0;
+    }
+
+    .cta-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: -0.2px;
+    }
+
+    .cta-btn:active { transform: scale(0.98); }
+
+    .cta-btn.primary {
+      background: linear-gradient(135deg, #c8b870, #a08840);
+      color: #1a1408;
+    }
+
+    .cta-btn.primary:disabled {
+      background: var(--surface2);
+      color: var(--muted);
+    }
+
+    .cta-btn.secondary {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="phone-inner">
+
+    <!-- STATUS BAR -->
+    <div class="statusbar">
+      <span>9:41</span>
+      <span>● ● ●</span>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav">
+      <div class="nav-back" onclick="goBack()">‹</div>
+      <h1 id="navTitle">FOV Simulator</h1>
+      <div class="step-tag" id="stepTag">Passo 1 di 4</div>
+    </div>
+
+    <!-- PROGRESS DOTS -->
+    <div class="progress-dots" id="progressDots"></div>
+
+    <!-- SCROLL CONTENT -->
+    <div class="content">
+
+      <!-- STEP 1: TARGET -->
+      <div class="screen active" id="step1">
+        <div class="screen-title">Cosa stai fotografando?</div>
+        <div class="screen-sub">Seleziona il soggetto del transito</div>
+
+        <div class="option-card selected" onclick="selectTarget('moon', this)">
+          <div class="icon">🌕</div>
+          <div class="info">
+            <div class="name">Luna</div>
+            <div class="sub">Diametro apparente ~0.50°</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectTarget('sun', this)">
+          <div class="icon">☀️</div>
+          <div class="info">
+            <div class="name">Sole</div>
+            <div class="sub">Diametro apparente ~0.53°</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+
+      <!-- STEP 2: CAMERA -->
+      <div class="screen" id="step2">
+        <div class="screen-title">Che corpo macchina usi?</div>
+        <div class="screen-sub">Il sensore determina il campo inquadrato</div>
+
+        <div class="option-card" onclick="selectCamera('ff', this)">
+          <div class="icon">📷</div>
+          <div class="info">
+            <div class="name">Full Frame</div>
+            <div class="sub">36 × 24mm — crop ×1.0</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectCamera('apsc_c', this)">
+          <div class="icon">📸</div>
+          <div class="info">
+            <div class="name">APS-C Canon</div>
+            <div class="sub">22.3 × 14.9mm — crop ×1.6</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectCamera('apsc_s', this)">
+          <div class="icon">📸</div>
+          <div class="info">
+            <div class="name">APS-C Sony / Nikon</div>
+            <div class="sub">23.5 × 15.6mm — crop ×1.5</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectCamera('m43', this)">
+          <div class="icon">🎞</div>
+          <div class="info">
+            <div class="name">Micro 4/3</div>
+            <div class="sub">17.3 × 13.0mm — crop ×2.0</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+
+      <!-- STEP 3: FOCAL + AIRCRAFT -->
+      <div class="screen" id="step3">
+        <div class="screen-title">Focale e aereo</div>
+        <div class="screen-sub">Scegli la focale e il tipo di aereo</div>
+
+        <div class="focal-grid">
+          <div class="focal-btn" onclick="selectFocal(200, this)">
+            <span class="mm">200</span><span class="label">mm — wide</span>
+          </div>
+          <div class="focal-btn" onclick="selectFocal(400, this)">
+            <span class="mm">400</span><span class="label">mm — tele</span>
+          </div>
+          <div class="focal-btn selected" onclick="selectFocal(600, this)">
+            <span class="mm">600</span><span class="label">mm — super</span>
+          </div>
+          <div class="focal-btn" onclick="selectFocal(800, this)">
+            <span class="mm">800</span><span class="label">mm — ultra</span>
+          </div>
+          <div class="focal-btn" onclick="selectFocal(1000, this)">
+            <span class="mm">1000</span><span class="label">mm</span>
+          </div>
+          <div class="focal-btn" onclick="selectFocal(1200, this)">
+            <span class="mm">1200</span><span class="label">mm</span>
+          </div>
+        </div>
+
+        <div class="focal-custom">
+          <label>Focale personalizzata — <span id="customFocalVal">600mm</span></label>
+          <input type="range" id="customFocal" min="100" max="1200" step="25" value="600"
+            oninput="onCustomFocal(this.value)" />
+        </div>
+
+        <div class="screen-sub" style="margin-top:4px;">Tipo di aereo</div>
+
+        <div class="option-card selected" onclick="selectAircraft('b737', this)">
+          <div class="icon">✈️</div>
+          <div class="info">
+            <div class="name">Boeing 737-800</div>
+            <div class="sub">Apertura alare 35.8m · Lunghezza 39.5m</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectAircraft('a320', this)">
+          <div class="icon">✈️</div>
+          <div class="info">
+            <div class="name">Airbus A320</div>
+            <div class="sub">Apertura alare 35.8m · Lunghezza 37.6m</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectAircraft('b787', this)">
+          <div class="icon">✈️</div>
+          <div class="info">
+            <div class="name">Boeing 787 Dreamliner</div>
+            <div class="sub">Apertura alare 60.1m · Lunghezza 57m</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectAircraft('a380', this)">
+          <div class="icon">✈️</div>
+          <div class="info">
+            <div class="name">Airbus A380</div>
+            <div class="sub">Apertura alare 79.8m · Lunghezza 73m</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+
+        <div class="option-card" onclick="selectAircraft('crj2', this)">
+          <div class="icon">🛫</div>
+          <div class="info">
+            <div class="name">CRJ-200 Regional</div>
+            <div class="sub">Apertura alare 21m · Lunghezza 26m</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+
+      <!-- STEP 4: PREVIEW -->
+      <div class="screen" id="step4">
+        <div class="screen-title">Preview del tuo scatto</div>
+
+        <div class="preview-canvas-wrap">
+          <canvas id="fovCanvas" width="700" height="467"></canvas>
+        </div>
+
+        <div class="preview-badge good" id="fitBadge">
+          <div class="bdot"></div>
+          <div>
+            <div class="btext" id="fitTitle">Aereo nel frame</div>
+            <div class="bsub" id="fitSub">—</div>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-pill">
+            <span class="sv" id="sFovH">—</span>
+            <span class="sc" id="sFovCat">—</span>
+            <span class="sk">Campo inquadrato</span>
+          </div>
+          <div class="stat-pill">
+            <span class="sv" id="sLunaPx">—</span>
+            <span class="sc" id="sLunaPct" style="color:var(--muted)">—</span>
+            <span class="sk">Luna nel frame</span>
+          </div>
+          <div class="stat-pill">
+            <span class="sv" id="sAcVsLuna">—</span>
+            <span class="sc" id="sAcPct" style="color:var(--muted)">della Luna</span>
+            <span class="sk">Aereo vs Luna</span>
+          </div>
+        </div>
+
+        <button class="play-btn ready" id="playBtn" onclick="togglePlay()">
+          <span id="playIcon">▶</span> <span id="playLabel">Anima il transito</span>
+        </button>
+
+        <div class="summary-card">
+          <div class="summary-row">
+            <span class="sk">Soggetto</span>
+            <span class="sv" id="sumTarget">—</span>
+            <span class="edit-btn" onclick="goToStep(1)">modifica</span>
+          </div>
+          <div class="summary-row">
+            <span class="sk">Camera</span>
+            <span class="sv" id="sumCamera">—</span>
+            <span class="edit-btn" onclick="goToStep(2)">modifica</span>
+          </div>
+          <div class="summary-row">
+            <span class="sk">Focale</span>
+            <span class="sv" id="sumFocal">—</span>
+            <span class="edit-btn" onclick="goToStep(3)">modifica</span>
+          </div>
+          <div class="summary-row">
+            <span class="sk">Aereo</span>
+            <span class="sv" id="sumAircraft">—</span>
+            <span class="edit-btn" onclick="goToStep(3)">modifica</span>
+          </div>
+        </div>
+
+        <div style="height:8px;"></div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- BOTTOM CTA -->
+    <div class="bottom-cta">
+      <button class="cta-btn primary" id="ctaBtn" onclick="nextStep()">Avanti</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const CAMERAS = {
+  ff:     { name: 'Full Frame',    w: 36.0, h: 24.0, cropFactor: 1.0 },
+  apsc_c: { name: 'APS-C Canon',   w: 22.3, h: 14.9, cropFactor: 1.6 },
+  apsc_s: { name: 'APS-C Sony',    w: 23.5, h: 15.6, cropFactor: 1.5 },
+  m43:    { name: 'Micro 4/3',     w: 17.3, h: 13.0, cropFactor: 2.0 },
+};
+
+const AIRCRAFT = {
+  b737: { name: 'Boeing 737',      length: 39.5, wingspan: 35.8 },
+  a320: { name: 'Airbus A320',     length: 37.6, wingspan: 35.8 },
+  b787: { name: 'Boeing 787',      length: 57.0, wingspan: 60.1 },
+  a380: { name: 'Airbus A380',     length: 73.0, wingspan: 79.75 },
+  crj2: { name: 'CRJ-200',         length: 26.0, wingspan: 21.0 },
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const state = {
+  step: 1,
+  totalSteps: 4,
+  target: 'moon',
+  camera: null,
+  focal: 600,
+  aircraft: 'b737',
+};
+
+let animating = false;
+let animFrame = null;
+let planeX = 0.5;
+
+// ─── STEP NAVIGATION ───────────────────────────────────────────────────────
+function updateProgress() {
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= state.totalSteps; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot ' + (i < state.step ? 'done' : i === state.step ? 'active' : 'next');
+    dots.appendChild(d);
+  }
+  document.getElementById('stepTag').textContent = `Passo ${state.step} di ${state.totalSteps}`;
+
+  const titles = ['FOV Simulator', 'Camera', 'Focale & Aereo', 'Preview'];
+  document.getElementById('navTitle').textContent = titles[state.step - 1];
+
+  const cta = document.getElementById('ctaBtn');
+  if (state.step === 4) {
+    cta.textContent = 'Salva setup';
+    cta.style.background = 'linear-gradient(135deg,#8080c0,#5050a0)';
+    cta.style.color = '#e0e0f8';
+  } else {
+    cta.textContent = 'Avanti →';
+    cta.style.background = '';
+    cta.style.color = '';
+  }
+}
+
+function showStep(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  state.step = n;
+  updateProgress();
+  if (n === 4) buildPreview();
+}
+
+function nextStep() {
+  if (state.step < state.totalSteps) {
+    showStep(state.step + 1);
+  }
+}
+
+function goBack() {
+  if (state.step > 1) showStep(state.step - 1);
+}
+
+function goToStep(n) { showStep(n); }
+
+// ─── STEP 1: TARGET ────────────────────────────────────────────────────────
+function selectTarget(t, el) {
+  state.target = t;
+  document.querySelectorAll('#step1 .option-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ─── STEP 2: CAMERA ────────────────────────────────────────────────────────
+function selectCamera(key, el) {
+  state.camera = key;
+  document.querySelectorAll('#step2 .option-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ─── STEP 3: FOCAL + AIRCRAFT ─────────────────────────────────────────────
+function selectFocal(v, el) {
+  state.focal = v;
+  document.querySelectorAll('.focal-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('customFocal').value = v;
+  document.getElementById('customFocalVal').textContent = v + 'mm';
+}
+
+function onCustomFocal(v) {
+  state.focal = +v;
+  document.getElementById('customFocalVal').textContent = v + 'mm';
+  document.querySelectorAll('.focal-btn').forEach(b => b.classList.remove('selected'));
+  const match = [200,400,600,800,1000,1200].indexOf(+v);
+  if (match >= 0) document.querySelectorAll('.focal-btn')[match].classList.add('selected');
+}
+
+function selectAircraft(key, el) {
+  state.aircraft = key;
+  document.querySelectorAll('#step3 .option-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ─── STEP 4: PREVIEW ──────────────────────────────────────────────────────
+const toDeg = r => r * 180 / Math.PI;
+function calcFov(mm, focal) { return 2 * toDeg(Math.atan(mm / (2 * focal))); }
+function angDeg(sizem, distKm) { return 2 * toDeg(Math.atan(sizem / (2 * distKm * 1000))); }
+
+const canvas = document.getElementById('fovCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const DIST_KM = 10; // default distance
+
+function buildPreview() {
+  const camKey = state.camera || 'ff';
+  const cam = CAMERAS[camKey];
+  const ac  = AIRCRAFT[state.aircraft];
+  const focal = state.focal;
+
+  const fovH = calcFov(cam.w, focal);
+  const fovV = calcFov(cam.h, focal);
+  const bodyAngDiam = state.target === 'moon' ? 0.5 : 0.53;
+  const bodyPx   = W * (bodyAngDiam / fovH);
+  const acSpanPx = W * (angDeg(ac.wingspan, DIST_KM) / fovH);
+  const acLenPx  = W * (angDeg(ac.length,   DIST_KM) / fovH);
+
+  // summary
+  const camName = cam.name;
+  const eqFocal = Math.round(focal * cam.cropFactor);
+  document.getElementById('sumTarget').textContent   = state.target === 'moon' ? 'Luna' : 'Sole';
+  document.getElementById('sumCamera').textContent   = camName;
+  document.getElementById('sumFocal').textContent    = `${focal}mm (${eqFocal}mm equiv.)`;
+  document.getElementById('sumAircraft').textContent = ac.name;
+
+  // stats
+  // FOV + category label
+  document.getElementById('sFovH').textContent = fovH.toFixed(1) + '°';
+  const fovCats = [
+    { max: 2,  label: 'Astro',       color: '#c060e0' },
+    { max: 4,  label: 'Super-tele',  color: '#c8b870' },
+    { max: 8,  label: 'Tele',        color: '#70b0d8' },
+    { max: 20, label: 'Normale',     color: '#70c870' },
+    { max: 999,label: 'Wide',        color: '#c87070' },
+  ];
+  const cat = fovCats.find(c => fovH < c.max);
+  document.getElementById('sFovCat').textContent = cat.label;
+  document.getElementById('sFovCat').style.color = cat.color;
+
+  // Luna: pixel size + % del frame
+  document.getElementById('sLunaPx').textContent  = Math.round(bodyPx) + 'px';
+  document.getElementById('sLunaPct').textContent = (bodyPx / W * 100).toFixed(0) + '% del frame';
+
+  // Aereo: % del disco lunare (la metrica che conta per un fotografo)
+  const acVsLuna = Math.round(acSpanPx / bodyPx * 100);
+  document.getElementById('sAcVsLuna').textContent = acVsLuna + '%';
+  const acVsColor = acVsLuna > 80 ? 'var(--amber)' : acVsLuna < 20 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('sAcVsLuna').style.color = acVsColor;
+  document.getElementById('sAcPct').textContent = 'del disco lunare';
+
+  // badge
+  const acPct = acSpanPx / W;
+  const badge = document.getElementById('fitBadge');
+  if (acPct > 1.0) {
+    badge.className = 'preview-badge bad';
+    document.getElementById('fitTitle').textContent = '✗ Aereo fuori dal frame';
+    document.getElementById('fitSub').textContent   = 'Riduci la focale per includere tutto';
+  } else if (acPct > 0.85) {
+    badge.className = 'preview-badge warning';
+    document.getElementById('fitTitle').textContent = '⚠ Margine molto ridotto';
+    document.getElementById('fitSub').textContent   = "L'aereo occupa " + (acPct*100).toFixed(0) + '% del frame';
+  } else {
+    badge.className = 'preview-badge good';
+    document.getElementById('fitTitle').textContent = '✓ Aereo nel frame';
+    document.getElementById('fitSub').textContent   = "L'aereo occupa " + (acPct*100).toFixed(0) + '% del frame';
+  }
+
+  planeX = 0.5;
+  drawScene(planeX);
+}
+
+function drawScene(px) {
+  const camKey = state.camera || 'ff';
+  const cam = CAMERAS[camKey];
+  const ac  = AIRCRAFT[state.aircraft];
+  const focal = state.focal;
+  const fovH = calcFov(cam.w, focal);
+  const bodyAngDiam = state.target === 'moon' ? 0.5 : 0.53;
+  const bodyPx   = W * (bodyAngDiam / fovH);
+  const acSpanPx = W * (angDeg(ac.wingspan, DIST_KM) / fovH);
+  const acLenPx  = W * (angDeg(ac.length,   DIST_KM) / fovH);
+
+  // bg
+  const bg = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W);
+  bg.addColorStop(0,'#0e0e20'); bg.addColorStop(1,'#040408');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // stars
+  for (let i=0; i<400; i++) {
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.04+0.005})`;
+    ctx.fillRect(Math.random()*W,Math.random()*H,Math.random()<0.2?2:1,Math.random()<0.2?2:1);
+  }
+
+  // thirds
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  [1,2].forEach(i=>{
+    ctx.beginPath(); ctx.moveTo(W/3*i,0); ctx.lineTo(W/3*i,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,H/3*i); ctx.lineTo(W,H/3*i); ctx.stroke();
+  });
+
+  // frame
+  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=2;
+  ctx.strokeRect(1,1,W-2,H-2);
+
+  // body
+  const cx=W/2, cy=H/2, r=bodyPx/2;
+  if (state.target === 'moon') {
+    const glow=ctx.createRadialGradient(cx,cy,r*0.8,cx,cy,r*3);
+    glow.addColorStop(0,'rgba(210,195,160,0.18)'); glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(cx,cy,r*3,0,Math.PI*2); ctx.fill();
+    const mg=ctx.createRadialGradient(cx-r*0.2,cy-r*0.2,r*0.1,cx,cy,r);
+    mg.addColorStop(0,'#f2e8c8'); mg.addColorStop(0.6,'#d0b878'); mg.addColorStop(1,'#906030');
+    ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    [{rx:-0.28,ry:-0.15,rr:0.09},{rx:0.2,ry:0.28,rr:0.07},{rx:-0.08,ry:0.3,rr:0.05},{rx:0.3,ry:-0.1,rr:0.08}]
+      .forEach(c=>{ctx.fillStyle='rgba(0,0,0,0.1)'; ctx.beginPath(); ctx.arc(cx+c.rx*r,cy+c.ry*r,c.rr*r,0,Math.PI*2); ctx.fill();});
+  } else {
+    const sg=ctx.createRadialGradient(cx,cy,r*0.9,cx,cy,r*5);
+    sg.addColorStop(0,'rgba(255,200,40,0.22)'); sg.addColorStop(0.4,'rgba(255,120,0,0.07)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(cx,cy,r*5,0,Math.PI*2); ctx.fill();
+    const sd=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    sd.addColorStop(0,'#fffce0'); sd.addColorStop(0.5,'#ffd030'); sd.addColorStop(1,'#ff7000');
+    ctx.fillStyle=sd; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // trajectory
+  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
+  ctx.setLineDash([4,8]);
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // plane
+  drawPlane(px*W, cy, acLenPx, acSpanPx);
+
+  // hud
+  ctx.font='16px -apple-system,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.25)';
+  ctx.textAlign='left';
+  ctx.fillText(`${cam.name} · ${focal}mm`, 10, H-10);
+  ctx.textAlign='right';
+  ctx.fillText(`FOV ${calcFov(cam.w,focal).toFixed(1)}°`, W-10, H-10);
+}
+
+function drawPlane(x,y,lenPx,spanPx) {
+  ctx.save(); ctx.translate(x,y);
+  const bH=spanPx*0.055, wH=spanPx*0.065;
+  ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowBlur=8;
+  ctx.fillStyle='#c0b8b8';
+  ctx.beginPath();
+  ctx.moveTo(-lenPx/2,-bH/2);
+  ctx.bezierCurveTo(-lenPx/2+lenPx*0.06,-bH*1.1,lenPx*0.25,-bH*1.1,lenPx/2,-bH*0.3);
+  ctx.bezierCurveTo(lenPx/2+lenPx*0.02,0,lenPx/2,bH*0.3,lenPx/2-lenPx*0.06,bH*0.5);
+  ctx.bezierCurveTo(lenPx*0.25,bH,-lenPx*0.25,bH,-lenPx/2,bH/2);
+  ctx.closePath(); ctx.fill();
+  [[1,-1],[1,1]].forEach(([sx,sy])=>{
+    ctx.fillStyle='#a8a0a0';
+    ctx.beginPath();
+    ctx.moveTo(-lenPx*0.05,0); ctx.lineTo(lenPx*0.18,0);
+    ctx.lineTo(spanPx*0.46*sx,wH*2.2*sy); ctx.lineTo(spanPx*0.46*sx,wH*3.2*sy);
+    ctx.lineTo(lenPx*0.04,wH*1.5*sy); ctx.closePath(); ctx.fill();
+  });
+  ctx.fillStyle='#9898a0';
+  ctx.beginPath();
+  ctx.moveTo(lenPx*0.34,-bH*0.3); ctx.lineTo(lenPx*0.48,-bH*3.5);
+  ctx.lineTo(lenPx*0.5,-bH*4); ctx.lineTo(lenPx*0.28,-bH*0.7);
+  ctx.closePath(); ctx.fill();
+  [[0.18,1.3],[0.30,2.0]].forEach(([ef,ev])=>{
+    [-1,1].forEach(s=>{
+      ctx.fillStyle='#707070';
+      ctx.beginPath(); ctx.ellipse(lenPx*0.03+spanPx*ef*0.28,wH*ev*s,lenPx*0.055,bH*0.65,0,0,Math.PI*2); ctx.fill();
+    });
+  });
+  ctx.shadowBlur=0; ctx.restore();
+}
+
+function togglePlay() {
+  animating = !animating;
+  const btn = document.getElementById('playBtn');
+  if (animating) {
+    document.getElementById('playIcon').textContent = '⏸';
+    document.getElementById('playLabel').textContent = 'Pausa';
+    btn.classList.remove('ready'); btn.classList.add('playing');
+    planeX = -0.35; loop();
+  } else {
+    document.getElementById('playIcon').textContent = '▶';
+    document.getElementById('playLabel').textContent = 'Anima il transito';
+    btn.classList.remove('playing'); btn.classList.add('ready');
+    cancelAnimationFrame(animFrame);
+    planeX = 0.5; drawScene(planeX);
+  }
+}
+
+function loop() {
+  planeX += 0.0022;
+  drawScene(planeX);
+  if (planeX < 1.35 && animating) {
+    animFrame = requestAnimationFrame(loop);
+  } else {
+    animating = false;
+    document.getElementById('playIcon').textContent = '▶';
+    document.getElementById('playLabel').textContent = 'Anima il transito';
+    document.getElementById('playBtn').classList.remove('playing');
+    document.getElementById('playBtn').classList.add('ready');
+    planeX = 0.5; drawScene(planeX);
+  }
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+updateProgress();
+</script>
+</body>
+</html>

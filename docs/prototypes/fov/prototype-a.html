@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOV Simulator — Prototype A</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a14;
+      color: #e8e0d0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px 16px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: #f0e8d8;
+    }
+
+    header span {
+      font-size: 13px;
+      color: #8a8070;
+      margin-left: auto;
+      background: #1a1a28;
+      border: 1px solid #2a2a3a;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      max-width: 600px;
+      padding: 0 16px;
+      margin-top: 12px;
+    }
+
+    #fovCanvas {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      display: block;
+      background: #000;
+    }
+
+    .fit-badge {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .fit-badge.fits {
+      background: rgba(0, 200, 120, 0.12);
+      border: 1px solid rgba(0, 200, 120, 0.3);
+      color: #00c878;
+    }
+
+    .fit-badge.partial {
+      background: rgba(255, 180, 0, 0.12);
+      border: 1px solid rgba(255, 180, 0, 0.3);
+      color: #ffb400;
+    }
+
+    .fit-badge.overflow {
+      background: rgba(255, 80, 80, 0.12);
+      border: 1px solid rgba(255, 80, 80, 0.3);
+      color: #ff5050;
+    }
+
+    .fit-badge .label { display: flex; align-items: center; gap: 8px; }
+    .fit-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .fit-badge .stats { color: inherit; opacity: 0.8; font-size: 12px; }
+
+    .controls {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #8a8070;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-label strong {
+      color: #d0c8b8;
+      font-size: 14px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    .select-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    select {
+      flex: 1;
+      background: #1a1a28;
+      border: 1px solid #2a2a3a;
+      color: #e0d8c8;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      appearance: none;
+      cursor: pointer;
+      outline: none;
+    }
+
+    select:focus { border-color: #5050a0; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #2a2a3a;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #c8b87a;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(200,184,122,0.4);
+    }
+
+    .focal-presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn {
+      background: #1a1a28;
+      border: 1px solid #2a2a3a;
+      color: #8a8070;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      border-color: #c8b87a;
+      color: #c8b87a;
+      background: rgba(200,184,122,0.08);
+    }
+
+    .target-toggle {
+      display: flex;
+      background: #1a1a28;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .target-btn {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: #8a8070;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .target-btn.active {
+      background: #2a2a3a;
+      color: #e0d8c8;
+    }
+
+    .play-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #3030608a, #50508a8a);
+      border: 1px solid #5050a0;
+      border-radius: 12px;
+      color: #c8c0f0;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: -0.2px;
+    }
+
+    .play-btn:hover {
+      background: linear-gradient(135deg, #4040809a, #6060aa9a);
+    }
+
+    .play-btn.playing {
+      background: linear-gradient(135deg, #503020, #805040);
+      border-color: #a07050;
+      color: #f0c080;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .info-pill {
+      flex: 1;
+      background: #12121e;
+      border: 1px solid #1e1e2e;
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .info-pill .val {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e0d0b0;
+      display: block;
+    }
+
+    .info-pill .lbl {
+      font-size: 10px;
+      color: #5a5060;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1e1e2e;
+    }
+
+    footer {
+      font-size: 11px;
+      color: #3a3040;
+      padding: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔭 FOV Simulator</h1>
+  <span>Prototype A</span>
+</header>
+
+<div class="canvas-wrapper">
+  <canvas id="fovCanvas" width="1200" height="800"></canvas>
+  <div class="fit-badge fits" id="fitBadge">
+    <span class="label"><span class="dot"></span> Aereo nel frame</span>
+    <span class="stats" id="fitStats">Boeing 737 — 100% visibile</span>
+  </div>
+</div>
+
+<div class="controls">
+
+  <!-- Target -->
+  <div class="control-group">
+    <div class="control-label">Soggetto</div>
+    <div class="target-toggle">
+      <button class="target-btn active" id="btnMoon" onclick="setTarget('moon')">🌕 Luna</button>
+      <button class="target-btn" id="btnSun" onclick="setTarget('sun')">☀️ Sole</button>
+    </div>
+  </div>
+
+  <!-- Camera + Aereo -->
+  <div class="control-group">
+    <div class="control-label">Camera</div>
+    <div class="select-row">
+      <select id="cameraSelect" onchange="update()">
+        <option value="ff">Full Frame (35mm)</option>
+        <option value="apsc_c">APS-C Canon</option>
+        <option value="apsc_s">APS-C Sony/Nikon</option>
+        <option value="m43">Micro 4/3</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="control-label">Aereo <strong id="aircraftLabel">Boeing 737</strong></div>
+    <select id="aircraftSelect" onchange="update()">
+      <option value="b737">Boeing 737-800 (39.5m / 35.8m)</option>
+      <option value="a320">Airbus A320 (37.6m / 35.8m)</option>
+      <option value="b787">Boeing 787 Dreamliner (57m / 60m)</option>
+      <option value="a380">Airbus A380 (73m / 80m)</option>
+      <option value="crj2">CRJ-200 Regional (26m / 21m)</option>
+    </select>
+  </div>
+
+  <!-- Focale -->
+  <div class="control-group">
+    <div class="control-label">Focale <strong id="focalLabel">400mm</strong></div>
+    <input type="range" id="focalSlider" min="100" max="1200" step="25" value="400" oninput="update()" />
+    <div class="focal-presets">
+      <button class="preset-btn" onclick="setFocal(200)">200mm</button>
+      <button class="preset-btn active" onclick="setFocal(400)">400mm</button>
+      <button class="preset-btn" onclick="setFocal(600)">600mm</button>
+      <button class="preset-btn" onclick="setFocal(800)">800mm</button>
+      <button class="preset-btn" onclick="setFocal(1200)">1200mm</button>
+    </div>
+  </div>
+
+  <!-- Distanza -->
+  <div class="control-group">
+    <div class="control-label">Distanza aereo <strong id="distLabel">10 km</strong></div>
+    <input type="range" id="distSlider" min="3" max="30" step="0.5" value="10" oninput="update()" />
+    <div class="info-row" style="margin-top:4px;">
+      <span style="font-size:11px;color:#4a4050;">⬅ più vicino / più grande</span>
+      <span style="font-size:11px;color:#4a4050;margin-left:auto;">più lontano / più piccolo ➡</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="info-row">
+    <div class="info-pill">
+      <span class="val" id="statFov">—</span>
+      <span class="lbl">FOV orizzontale</span>
+    </div>
+    <div class="info-pill">
+      <span class="val" id="statBody">—</span>
+      <span class="lbl">Luna/Sole nel frame</span>
+    </div>
+    <div class="info-pill">
+      <span class="val" id="statPlane">—</span>
+      <span class="lbl">Aereo nel frame</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Play -->
+  <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ Anima il transito</button>
+
+</div>
+
+<footer>SolarMoon — Prototype A — Canvas 2D — FOV Simulator</footer>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const CAMERAS = {
+  ff:     { name: 'Full Frame',     w: 36.0, h: 24.0 },
+  apsc_c: { name: 'APS-C Canon',    w: 22.3, h: 14.9 },
+  apsc_s: { name: 'APS-C Sony',     w: 23.5, h: 15.6 },
+  m43:    { name: 'Micro 4/3',      w: 17.3, h: 13.0 },
+};
+
+const AIRCRAFT = {
+  b737: { name: 'Boeing 737',       length: 39.5, wingspan: 35.8 },
+  a320: { name: 'Airbus A320',      length: 37.6, wingspan: 35.8 },
+  b787: { name: 'Boeing 787',       length: 57.0, wingspan: 60.1 },
+  a380: { name: 'Airbus A380',      length: 73.0, wingspan: 79.75 },
+  crj2: { name: 'CRJ-200',          length: 26.0, wingspan: 21.0 },
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let target = 'moon';
+let animating = false;
+let animFrame = null;
+let planeX = -0.5; // fraction of canvas, -0.5..1.5
+
+// ─── FOV MATH ──────────────────────────────────────────────────────────────
+const toRad = d => d * Math.PI / 180;
+const toDeg = r => r * 180 / Math.PI;
+
+function calcFov(sensorMm, focalMm) {
+  return 2 * toDeg(Math.atan(sensorMm / (2 * focalMm)));
+}
+
+function angularSizeDeg(sizeMeter, distKm) {
+  const distM = distKm * 1000;
+  return 2 * toDeg(Math.atan(sizeMeter / (2 * distM)));
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('fovCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+function drawScene(planeXFraction) {
+  const camKey = document.getElementById('cameraSelect').value;
+  const acKey  = document.getElementById('aircraftSelect').value;
+  const focal  = parseFloat(document.getElementById('focalSlider').value);
+  const dist   = parseFloat(document.getElementById('distSlider').value);
+  const cam    = CAMERAS[camKey];
+  const ac     = AIRCRAFT[acKey];
+
+  const fovH = calcFov(cam.w, focal);
+  const fovV = calcFov(cam.h, focal);
+
+  const bodyAngDiam = target === 'moon' ? 0.5 : 0.53;
+
+  const bodyPx   = W * (bodyAngDiam / fovH);
+  const planeLenPx  = W * (angularSizeDeg(ac.length,  dist) / fovH);
+  const planeSpanPx = W * (angularSizeDeg(ac.wingspan, dist) / fovH);
+
+  // update stats
+  document.getElementById('statFov').textContent   = fovH.toFixed(1) + '°';
+  document.getElementById('statBody').textContent  = (bodyPx / W * 100).toFixed(0) + '%';
+  document.getElementById('statPlane').textContent = (planeSpanPx / W * 100).toFixed(0) + '%';
+
+  // fit badge
+  const badge = document.getElementById('fitBadge');
+  const fitStats = document.getElementById('fitStats');
+  const fitPct = (planeSpanPx / W * 100).toFixed(0);
+  const label = ac.name + ' — wingspan';
+
+  if (planeSpanPx <= W * 0.92) {
+    badge.className = 'fit-badge fits';
+    badge.querySelector('.label').innerHTML = '<span class="dot"></span> Aereo nel frame';
+    fitStats.textContent = `${label} = ${fitPct}% del frame`;
+  } else if (planeSpanPx <= W * 1.1) {
+    badge.className = 'fit-badge partial';
+    badge.querySelector('.label').innerHTML = '<span class="dot"></span> Parzialmente fuori';
+    fitStats.textContent = `${label} = ${fitPct}% del frame`;
+  } else {
+    badge.className = 'fit-badge overflow';
+    badge.querySelector('.label').innerHTML = '<span class="dot"></span> Fuori dal frame';
+    fitStats.textContent = `${label} = ${fitPct}% del frame — riduci la focale`;
+  }
+
+  // ── draw background ───────────────────────────────────────────────────────
+  const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.8);
+  bgGrad.addColorStop(0, '#0d0d1f');
+  bgGrad.addColorStop(1, '#060610');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // subtle film grain
+  for (let i = 0; i < 800; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.025})`;
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+  }
+
+  // frame crop lines (rule of thirds)
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    ctx.beginPath(); ctx.moveTo(W/3*i, 0); ctx.lineTo(W/3*i, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H/3*i); ctx.lineTo(W, H/3*i); ctx.stroke();
+  }
+
+  // frame border
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, W-2, H-2);
+
+  // ── draw Moon / Sun ───────────────────────────────────────────────────────
+  const cx = W / 2;
+  const cy = H / 2;
+  const r  = bodyPx / 2;
+
+  if (target === 'moon') {
+    // outer glow
+    const glowGrad = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 2.5);
+    glowGrad.addColorStop(0, 'rgba(220,210,180,0.18)');
+    glowGrad.addColorStop(1, 'rgba(220,210,180,0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // moon disc
+    const moonGrad = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, r*0.1, cx, cy, r);
+    moonGrad.addColorStop(0, '#f5edd0');
+    moonGrad.addColorStop(0.6, '#d8c898');
+    moonGrad.addColorStop(1, '#a08858');
+    ctx.fillStyle = moonGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // craters (decorative)
+    const craters = [
+      { rx: -0.3, ry: -0.2, rr: 0.08 },
+      { rx:  0.2, ry:  0.3, rr: 0.06 },
+      { rx: -0.1, ry:  0.3, rr: 0.05 },
+      { rx:  0.3, ry: -0.1, rr: 0.07 },
+    ];
+    craters.forEach(c => {
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.beginPath();
+      ctx.arc(cx + c.rx * r, cy + c.ry * r, c.rr * r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  } else {
+    // sun glow
+    const sunGlow = ctx.createRadialGradient(cx, cy, r*0.9, cx, cy, r*4);
+    sunGlow.addColorStop(0, 'rgba(255,200,50,0.25)');
+    sunGlow.addColorStop(0.5, 'rgba(255,140,0,0.08)');
+    sunGlow.addColorStop(1, 'rgba(255,80,0,0)');
+    ctx.fillStyle = sunGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*4, 0, Math.PI*2);
+    ctx.fill();
+
+    // sun disc
+    const sunGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    sunGrad.addColorStop(0, '#fffae0');
+    sunGrad.addColorStop(0.5, '#ffd040');
+    sunGrad.addColorStop(1, '#ff8000');
+    ctx.fillStyle = sunGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── draw aircraft ─────────────────────────────────────────────────────────
+  const planeXpx = planeXFraction * W;
+  const planeYpx = H * 0.5 + (fovH > 1.5 ? H * 0.05 : 0); // slight vertical offset
+
+  drawAircraftSilhouette(ctx, planeXpx, planeYpx, planeLenPx, planeSpanPx, ac);
+
+  // ── labels ────────────────────────────────────────────────────────────────
+  ctx.font = '22px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${cam.name} • ${focal}mm`, 16, H - 16);
+
+  ctx.textAlign = 'right';
+  ctx.fillText(`FOV ${fovH.toFixed(1)}° × ${fovV.toFixed(1)}°`, W - 16, H - 16);
+}
+
+function drawAircraftSilhouette(ctx, x, y, lenPx, spanPx, ac) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  const bodyW = lenPx;
+  const bodyH = spanPx * 0.06;
+  const wingH = spanPx * 0.07;
+
+  // shadow/glow under aircraft
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 8;
+
+  // fuselage
+  ctx.fillStyle = '#c8c0c0';
+  ctx.beginPath();
+  // streamlined fuselage shape
+  ctx.moveTo(-bodyW/2, -bodyH/2);
+  ctx.bezierCurveTo(-bodyW/2 + bodyW*0.05, -bodyH, bodyW*0.3, -bodyH, bodyW/2, -bodyH*0.3);
+  ctx.bezierCurveTo(bodyW/2 + bodyW*0.03, 0, bodyW/2, bodyH*0.3, bodyW/2 - bodyW*0.05, bodyH*0.5);
+  ctx.bezierCurveTo(bodyW*0.3, bodyH, -bodyW*0.3, bodyH, -bodyW/2, bodyH/2);
+  ctx.closePath();
+  ctx.fill();
+
+  // wings (swept)
+  ctx.fillStyle = '#b0a8a8';
+  ctx.beginPath();
+  ctx.moveTo(-bodyW*0.05, 0);
+  ctx.lineTo(bodyW*0.2, 0);
+  ctx.lineTo(spanPx * 0.45, wingH * 2);
+  ctx.lineTo(spanPx * 0.45, wingH * 3);
+  ctx.lineTo(bodyW*0.05, wingH * 1.5);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(-bodyW*0.05, 0);
+  ctx.lineTo(bodyW*0.2, 0);
+  ctx.lineTo(spanPx * 0.45, -wingH * 2);
+  ctx.lineTo(spanPx * 0.45, -wingH * 3);
+  ctx.lineTo(bodyW*0.05, -wingH * 1.5);
+  ctx.closePath();
+  ctx.fill();
+
+  // tail
+  ctx.fillStyle = '#a8a0a0';
+  ctx.beginPath();
+  ctx.moveTo(bodyW*0.35, -bodyH*0.3);
+  ctx.lineTo(bodyW*0.5, -bodyH * 3);
+  ctx.lineTo(bodyW*0.5, -bodyH * 3.5);
+  ctx.lineTo(bodyW*0.3, -bodyH * 0.6);
+  ctx.closePath();
+  ctx.fill();
+
+  // engine pods (under wings)
+  const engW = bodyW * 0.12;
+  const engH = bodyH * 0.8;
+  [[spanPx*0.18, wingH*1.3], [spanPx*0.32, wingH*1.9]].forEach(([ex, ey]) => {
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.ellipse(bodyW*0.05 + ex * 0.3, ey, engW/2, engH/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(bodyW*0.05 + ex * 0.3, -ey, engW/2, engH/2, 0, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // wingtip
+  ctx.fillStyle = '#909898';
+  ctx.beginPath();
+  ctx.ellipse(spanPx*0.45, wingH*2.5, wingH*0.3, wingH, 0.3, 0, Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(spanPx*0.45, -wingH*2.5, wingH*0.3, wingH, -0.3, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ─── ANIMATION ─────────────────────────────────────────────────────────────
+function togglePlay() {
+  animating = !animating;
+  const btn = document.getElementById('playBtn');
+  if (animating) {
+    btn.textContent = '⏸ Stop animazione';
+    btn.classList.add('playing');
+    planeX = -0.35;
+    animate();
+  } else {
+    btn.textContent = '▶ Anima il transito';
+    btn.classList.remove('playing');
+    cancelAnimationFrame(animFrame);
+    planeX = 0.5;
+    drawScene(planeX);
+  }
+}
+
+function animate() {
+  planeX += 0.002;
+  drawScene(planeX);
+  if (planeX < 1.35 && animating) {
+    animFrame = requestAnimationFrame(animate);
+  } else if (planeX >= 1.35) {
+    animating = false;
+    document.getElementById('playBtn').textContent = '▶ Anima il transito';
+    document.getElementById('playBtn').classList.remove('playing');
+    planeX = 0.5;
+    drawScene(planeX);
+  }
+}
+
+// ─── CONTROLS ──────────────────────────────────────────────────────────────
+function setTarget(t) {
+  target = t;
+  document.getElementById('btnMoon').classList.toggle('active', t === 'moon');
+  document.getElementById('btnSun').classList.toggle('active', t === 'sun');
+  update();
+}
+
+function setFocal(v) {
+  document.getElementById('focalSlider').value = v;
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === v + 'mm');
+  });
+  update();
+}
+
+function update() {
+  const focal = document.getElementById('focalSlider').value;
+  const dist  = document.getElementById('distSlider').value;
+  const acKey = document.getElementById('aircraftSelect').value;
+  document.getElementById('focalLabel').textContent = focal + 'mm';
+  document.getElementById('distLabel').textContent  = parseFloat(dist).toFixed(1) + ' km';
+  document.getElementById('aircraftLabel').textContent = AIRCRAFT[acKey].name;
+  drawScene(planeX);
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+planeX = 0.5;
+update();
+</script>
+</body>
+</html>

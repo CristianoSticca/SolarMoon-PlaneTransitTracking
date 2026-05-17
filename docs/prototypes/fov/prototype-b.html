@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOV Simulator — Prototype B</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #070710;
+      color: #d8d0c0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ────────────────────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid #12121e;
+      background: #0a0a18;
+      gap: 16px;
+    }
+
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #e8e0d0; }
+    .topbar .tag {
+      font-size: 11px;
+      color: #6060a0;
+      background: #12122a;
+      border: 1px solid #20204a;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .topbar .target-toggle {
+      margin-left: auto;
+      display: flex;
+      background: #14141e;
+      border: 1px solid #20203a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .topbar .target-btn {
+      padding: 6px 14px;
+      background: transparent;
+      border: none;
+      color: #6a6070;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .topbar .target-btn.active {
+      background: #22223a;
+      color: #d8d0c0;
+    }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr 240px;
+      min-height: calc(100vh - 52px);
+    }
+
+    /* ── LEFT PANEL ──────────────────────────────────────────────────────── */
+    .panel-left {
+      background: #0a0a18;
+      border-right: 1px solid #12121e;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .panel-left h2 {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #3a3050;
+      margin-bottom: -12px;
+    }
+
+    select {
+      width: 100%;
+      background: #12121e;
+      border: 1px solid #1e1e2e;
+      color: #c8c0b0;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      appearance: none;
+      cursor: pointer;
+      outline: none;
+    }
+
+    select:focus { border-color: #4040a0; }
+
+    .slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6a6070;
+    }
+
+    .slider-header strong { color: #c8c0b0; font-weight: 500; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 3px;
+      background: #1e1e30;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #b0a070;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(176,160,112,0.4);
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .preset {
+      background: #12121e;
+      border: 1px solid #1e1e2e;
+      color: #6a6070;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset:hover, .preset.active {
+      border-color: #b0a070;
+      color: #b0a070;
+      background: rgba(176,160,112,0.08);
+    }
+
+    .divider { border: none; border-top: 1px solid #12121e; }
+
+    .play-btn {
+      width: 100%;
+      padding: 12px;
+      background: #0e0e1e;
+      border: 1px solid #30307a;
+      border-radius: 10px;
+      color: #9090d0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .play-btn:hover { background: #14143a; border-color: #5050a0; color: #b0b0f0; }
+    .play-btn.playing { background: #1a0e0e; border-color: #a06040; color: #e09060; }
+
+    /* ── CENTER ──────────────────────────────────────────────────────────── */
+    .panel-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #07070f;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    #fovCanvas {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      display: block;
+      border: 1px solid #14141e;
+    }
+
+    .frame-label {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      pointer-events: none;
+    }
+
+    .fit-indicator {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fit-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: #14141e;
+      border-radius: 2px;
+      overflow: visible;
+      position: relative;
+    }
+
+    .fit-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+      max-width: 100%;
+    }
+
+    .fit-label {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* ── RIGHT PANEL ─────────────────────────────────────────────────────── */
+    .panel-right {
+      background: #0a0a18;
+      border-left: 1px solid #12121e;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .stat-section {
+      padding: 14px 0;
+      border-bottom: 1px solid #12121e;
+    }
+
+    .stat-section:last-child { border-bottom: none; }
+
+    .stat-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #3a3050;
+      margin-bottom: 10px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+    }
+
+    .stat-row .key { font-size: 12px; color: #6a6070; }
+    .stat-row .val { font-size: 13px; color: #c0b8a0; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .stat-row .val.highlight { color: #c8b870; }
+
+    .verdict-box {
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 8px;
+    }
+
+    .verdict-box .v-title { font-size: 12px; font-weight: 600; }
+    .verdict-box .v-desc  { font-size: 11px; margin-top: 3px; opacity: 0.8; }
+
+    .verdict-box.good    { background: rgba(0,180,100,0.1); border: 1px solid rgba(0,180,100,0.25); color: #00c878; }
+    .verdict-box.warning { background: rgba(255,160,0,0.1); border: 1px solid rgba(255,160,0,0.25);  color: #ffb040; }
+    .verdict-box.bad     { background: rgba(220,60,60,0.1);  border: 1px solid rgba(220,60,60,0.25);  color: #e05050; }
+
+    .rec-pill {
+      display: block;
+      margin-top: 6px;
+      background: #10101e;
+      border: 1px solid #1e1e2e;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: #8080b0;
+      line-height: 1.5;
+    }
+
+    .rec-pill strong { color: #a0a0d0; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>🔭 FOV Simulator</h1>
+  <span class="tag">Prototype B</span>
+  <div class="target-toggle">
+    <button class="target-btn active" id="btnMoon" onclick="setTarget('moon')">🌕 Luna</button>
+    <button class="target-btn" id="btnSun" onclick="setTarget('sun')">☀️ Sole</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT: CONTROLS -->
+  <div class="panel-left">
+
+    <h2>Camera</h2>
+    <select id="cameraSelect" onchange="update()">
+      <option value="ff">Full Frame (35mm)</option>
+      <option value="apsc_c">APS-C Canon</option>
+      <option value="apsc_s">APS-C Sony / Nikon</option>
+      <option value="m43">Micro 4/3</option>
+    </select>
+
+    <h2>Aereo</h2>
+    <select id="aircraftSelect" onchange="update()">
+      <option value="b737">Boeing 737-800</option>
+      <option value="a320">Airbus A320</option>
+      <option value="b787">Boeing 787 Dreamliner</option>
+      <option value="a380">Airbus A380</option>
+      <option value="crj2">CRJ-200 Regional</option>
+    </select>
+
+    <hr class="divider">
+
+    <div class="slider-wrap">
+      <div class="slider-header">
+        <span>Focale</span>
+        <strong id="focalLabel">400mm</strong>
+      </div>
+      <input type="range" id="focalSlider" min="100" max="1200" step="25" value="400" oninput="update()" />
+      <div class="presets">
+        <button class="preset" onclick="setFocal(200)">200</button>
+        <button class="preset active" onclick="setFocal(400)">400</button>
+        <button class="preset" onclick="setFocal(600)">600</button>
+        <button class="preset" onclick="setFocal(800)">800</button>
+        <button class="preset" onclick="setFocal(1000)">1000</button>
+        <button class="preset" onclick="setFocal(1200)">1200</button>
+      </div>
+    </div>
+
+    <div class="slider-wrap">
+      <div class="slider-header">
+        <span>Distanza aereo</span>
+        <strong id="distLabel">10.0 km</strong>
+      </div>
+      <input type="range" id="distSlider" min="3" max="30" step="0.5" value="10" oninput="update()" />
+    </div>
+
+    <hr class="divider">
+
+    <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ Anima il transito</button>
+
+  </div>
+
+  <!-- CENTER: CANVAS -->
+  <div class="panel-center">
+    <div class="canvas-container">
+      <canvas id="fovCanvas" width="1200" height="800"></canvas>
+    </div>
+
+    <div class="fit-indicator">
+      <span class="fit-label" id="fitLabel" style="color:#00c878">Aereo nel frame</span>
+      <div class="fit-bar-wrap">
+        <div class="fit-bar" id="fitBar" style="width:40%;background:#00c878"></div>
+      </div>
+      <span class="fit-label" id="fitPct" style="color:#6a6070">40%</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: STATS -->
+  <div class="panel-right">
+
+    <div class="stat-section">
+      <div class="stat-title">Campo inquadrato</div>
+      <div class="stat-row">
+        <span class="key">FOV orizzontale</span>
+        <span class="val highlight" id="statFovH">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">FOV verticale</span>
+        <span class="val" id="statFovV">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">Focale equiv.</span>
+        <span class="val" id="statEqFocal">—</span>
+      </div>
+    </div>
+
+    <div class="stat-section">
+      <div class="stat-title">Luna / Sole</div>
+      <div class="stat-row">
+        <span class="key">Diametro angolare</span>
+        <span class="val" id="statBodyAngle">0.50°</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">% del frame</span>
+        <span class="val highlight" id="statBodyPct">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">Pixel stimati</span>
+        <span class="val" id="statBodyPx">—</span>
+      </div>
+    </div>
+
+    <div class="stat-section">
+      <div class="stat-title">Aereo</div>
+      <div class="stat-row">
+        <span class="key">Apertura alare</span>
+        <span class="val" id="statAcSpan">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">Angolo apparente</span>
+        <span class="val" id="statAcAngle">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="key">% del frame</span>
+        <span class="val highlight" id="statAcPct">—</span>
+      </div>
+    </div>
+
+    <div class="stat-section">
+      <div class="stat-title">Verdetto</div>
+      <div id="verdictBox" class="verdict-box good">
+        <div class="v-title" id="verdictTitle">✓ Composizione ideale</div>
+        <div class="v-desc" id="verdictDesc">Aereo e Luna ben proporzionati nel frame.</div>
+      </div>
+      <span class="rec-pill" id="recPill">
+        <strong>Consiglio:</strong> focale ottimale per questo transito.
+      </span>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const CAMERAS = {
+  ff:     { name: 'Full Frame', w: 36.0, h: 24.0, cropFactor: 1.0 },
+  apsc_c: { name: 'APS-C Canon', w: 22.3, h: 14.9, cropFactor: 1.6 },
+  apsc_s: { name: 'APS-C Sony', w: 23.5, h: 15.6, cropFactor: 1.5 },
+  m43:    { name: 'Micro 4/3', w: 17.3, h: 13.0, cropFactor: 2.0 },
+};
+
+const AIRCRAFT = {
+  b737: { name: 'Boeing 737-800', length: 39.5, wingspan: 35.8 },
+  a320: { name: 'Airbus A320',    length: 37.6, wingspan: 35.8 },
+  b787: { name: 'Boeing 787',     length: 57.0, wingspan: 60.1 },
+  a380: { name: 'Airbus A380',    length: 73.0, wingspan: 79.75 },
+  crj2: { name: 'CRJ-200',        length: 26.0, wingspan: 21.0 },
+};
+
+let target = 'moon';
+let animating = false;
+let animFrame = null;
+let planeX = 0.5;
+
+const toDeg = r => r * 180 / Math.PI;
+function calcFov(mm, focal) { return 2 * toDeg(Math.atan(mm / (2 * focal))); }
+function angDeg(sizem, distKm) { return 2 * toDeg(Math.atan(sizem / (2 * distKm * 1000))); }
+
+// ─── CANVAS ────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('fovCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+function drawScene(px) {
+  const cam  = CAMERAS[document.getElementById('cameraSelect').value];
+  const ac   = AIRCRAFT[document.getElementById('aircraftSelect').value];
+  const focal = +document.getElementById('focalSlider').value;
+  const dist  = +document.getElementById('distSlider').value;
+
+  const fovH = calcFov(cam.w, focal);
+  const fovV = calcFov(cam.h, focal);
+  const bodyAngDiam = target === 'moon' ? 0.5 : 0.53;
+  const bodyPx    = W * (bodyAngDiam / fovH);
+  const acSpanPx  = W * (angDeg(ac.wingspan, dist) / fovH);
+  const acLenPx   = W * (angDeg(ac.length, dist) / fovH);
+
+  // update right panel
+  const eqFocal = (focal * cam.cropFactor).toFixed(0);
+  document.getElementById('statFovH').textContent   = fovH.toFixed(2) + '°';
+  document.getElementById('statFovV').textContent   = fovV.toFixed(2) + '°';
+  document.getElementById('statEqFocal').textContent = eqFocal + 'mm equiv.';
+  document.getElementById('statBodyAngle').textContent = bodyAngDiam.toFixed(2) + '°';
+  document.getElementById('statBodyPct').textContent = (bodyPx / W * 100).toFixed(1) + '%';
+  document.getElementById('statBodyPx').textContent  = Math.round(bodyPx) + ' px';
+  document.getElementById('statAcSpan').textContent  = ac.wingspan + 'm';
+  document.getElementById('statAcAngle').textContent = angDeg(ac.wingspan, dist).toFixed(3) + '°';
+  document.getElementById('statAcPct').textContent   = (acSpanPx / W * 100).toFixed(1) + '%';
+
+  // verdict
+  const ratio = acSpanPx / bodyPx;
+  const acPct = acSpanPx / W;
+  const vbox = document.getElementById('verdictBox');
+  const vtitle = document.getElementById('verdictTitle');
+  const vdesc  = document.getElementById('verdictDesc');
+  const rec    = document.getElementById('recPill');
+
+  if (acPct > 1.0) {
+    vbox.className = 'verdict-box bad';
+    vtitle.textContent = '✗ Aereo fuori dal frame';
+    vdesc.textContent  = "L'apertura alare supera il campo inquadrato.";
+    const newFocal = Math.floor(focal * (W * 0.85) / acSpanPx / 25) * 25;
+    rec.innerHTML = `<strong>Consiglio:</strong> riduci la focale a ~${newFocal}mm per includere l'aereo.`;
+  } else if (acPct > 0.85) {
+    vbox.className = 'verdict-box warning';
+    vtitle.textContent = '⚠ Frame molto stretto';
+    vdesc.textContent  = "L'aereo occupa quasi tutto il frame. Margine minimo.";
+    rec.innerHTML = `<strong>Consiglio:</strong> abbassa di 50–100mm la focale per avere più margine.`;
+  } else if (ratio < 0.15) {
+    vbox.className = 'verdict-box warning';
+    vtitle.textContent = '⚠ Aereo troppo piccolo';
+    vdesc.textContent  = "L'aereo è quasi invisibile rispetto alla Luna.";
+    const newFocal = Math.min(1200, Math.ceil(focal * 1.5 / 25) * 25);
+    rec.innerHTML = `<strong>Consiglio:</strong> avvicinati o aumenta la focale (prova ${newFocal}mm).`;
+  } else {
+    vbox.className = 'verdict-box good';
+    vtitle.textContent = '✓ Composizione ideale';
+    vdesc.textContent  = 'Aereo e ' + (target === 'moon' ? 'Luna' : 'Sole') + ' ben proporzionati.';
+    rec.innerHTML = `<strong>Consiglio:</strong> ottimo! L'aereo occupa il ${(ratio*100).toFixed(0)}% del diametro lunare.`;
+  }
+
+  // fit bar
+  const fitPct = Math.min(acPct * 100, 120);
+  const fitColor = acPct > 1.0 ? '#e05050' : acPct > 0.85 ? '#ffb040' : '#00c878';
+  document.getElementById('fitBar').style.width = Math.min(fitPct, 100) + '%';
+  document.getElementById('fitBar').style.background = fitColor;
+  document.getElementById('fitPct').textContent = (acPct * 100).toFixed(0) + '%';
+  document.getElementById('fitPct').style.color = fitColor;
+  document.getElementById('fitLabel').style.color = fitColor;
+  document.getElementById('fitLabel').textContent =
+    acPct > 1.0 ? 'Fuori dal frame' : acPct > 0.85 ? 'Margine ridotto' : 'Nel frame';
+
+  // ── DRAW ──────────────────────────────────────────────────────────────────
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+  bg.addColorStop(0, '#0d0d20');
+  bg.addColorStop(1, '#040408');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // stars
+  for (let i = 0; i < 600; i++) {
+    const a = Math.random() * 0.04 + 0.01;
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fillRect(Math.random() * W, Math.random() * H, Math.random() < 0.3 ? 2 : 1, Math.random() < 0.3 ? 2 : 1);
+  }
+
+  // thirds grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  [1,2].forEach(i => {
+    ctx.beginPath(); ctx.moveTo(W/3*i,0); ctx.lineTo(W/3*i,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,H/3*i); ctx.lineTo(W,H/3*i); ctx.stroke();
+  });
+
+  // frame border
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, W-2, H-2);
+
+  // center crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W/2-20,H/2); ctx.lineTo(W/2+20,H/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2,H/2-20); ctx.lineTo(W/2,H/2+20); ctx.stroke();
+
+  // body
+  const cx = W/2, cy = H/2, r = bodyPx/2;
+  if (target === 'moon') {
+    const glow = ctx.createRadialGradient(cx,cy,r*0.8,cx,cy,r*3);
+    glow.addColorStop(0,'rgba(200,190,160,0.15)'); glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx,cy,r*3,0,Math.PI*2); ctx.fill();
+    const mg = ctx.createRadialGradient(cx-r*0.2,cy-r*0.2,r*0.1,cx,cy,r);
+    mg.addColorStop(0,'#f0e8c8'); mg.addColorStop(0.6,'#d0b880'); mg.addColorStop(1,'#906030');
+    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    [{rx:-0.28,ry:-0.15,rr:0.09},{rx:0.18,ry:0.28,rr:0.07},{rx:-0.08,ry:0.32,rr:0.05},{rx:0.28,ry:-0.08,rr:0.08}]
+      .forEach(c => {
+        ctx.fillStyle='rgba(0,0,0,0.12)';
+        ctx.beginPath(); ctx.arc(cx+c.rx*r,cy+c.ry*r,c.rr*r,0,Math.PI*2); ctx.fill();
+      });
+  } else {
+    const sg = ctx.createRadialGradient(cx,cy,r*0.9,cx,cy,r*5);
+    sg.addColorStop(0,'rgba(255,200,40,0.22)'); sg.addColorStop(0.4,'rgba(255,120,0,0.06)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(cx,cy,r*5,0,Math.PI*2); ctx.fill();
+    const sd = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    sd.addColorStop(0,'#fffce0'); sd.addColorStop(0.5,'#ffcc30'); sd.addColorStop(1,'#ff7000');
+    ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // trajectory line
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,8]);
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // aircraft
+  drawPlane(px * W, cy, acLenPx, acSpanPx);
+
+  // HUD labels
+  ctx.font = '20px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${cam.name} • ${focal}mm`, 14, H-14);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${fovH.toFixed(1)}° × ${fovV.toFixed(1)}°`, W-14, H-14);
+}
+
+function drawPlane(x, y, lenPx, spanPx) {
+  ctx.save();
+  ctx.translate(x, y);
+  const bH = spanPx * 0.055, wH = spanPx * 0.065;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10;
+
+  // fuselage
+  ctx.fillStyle = '#c0b8b8';
+  ctx.beginPath();
+  ctx.moveTo(-lenPx/2, -bH/2);
+  ctx.bezierCurveTo(-lenPx/2+lenPx*0.06,-bH*1.1, lenPx*0.25,-bH*1.1, lenPx/2,-bH*0.3);
+  ctx.bezierCurveTo(lenPx/2+lenPx*0.02,0, lenPx/2,bH*0.3, lenPx/2-lenPx*0.06,bH*0.5);
+  ctx.bezierCurveTo(lenPx*0.25,bH, -lenPx*0.25,bH, -lenPx/2,bH/2);
+  ctx.closePath();
+  ctx.fill();
+
+  // wings
+  [[1,-1],[1,1]].forEach(([sx,sy]) => {
+    ctx.fillStyle = '#a8a0a0';
+    ctx.beginPath();
+    ctx.moveTo(-lenPx*0.05, 0);
+    ctx.lineTo(lenPx*0.18, 0);
+    ctx.lineTo(spanPx*0.46*sx, wH*2.2*sy);
+    ctx.lineTo(spanPx*0.46*sx, wH*3.2*sy);
+    ctx.lineTo(lenPx*0.04, wH*1.5*sy);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // tail
+  ctx.fillStyle = '#9898a0';
+  ctx.beginPath();
+  ctx.moveTo(lenPx*0.34,-bH*0.3);
+  ctx.lineTo(lenPx*0.48,-bH*3.5);
+  ctx.lineTo(lenPx*0.5,-bH*4);
+  ctx.lineTo(lenPx*0.28,-bH*0.7);
+  ctx.closePath();
+  ctx.fill();
+
+  // engines
+  [[0.18,1.3],[0.30,2.0]].forEach(([ef,ev]) => {
+    [-1,1].forEach(s => {
+      ctx.fillStyle = '#707070';
+      ctx.beginPath();
+      ctx.ellipse(lenPx*0.03+spanPx*ef*0.28, wH*ev*s, lenPx*0.055, bH*0.65, 0, 0, Math.PI*2);
+      ctx.fill();
+    });
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ─── ANIMATION ─────────────────────────────────────────────────────────────
+function togglePlay() {
+  animating = !animating;
+  const btn = document.getElementById('playBtn');
+  if (animating) {
+    btn.textContent = '⏸ Pausa';
+    btn.classList.add('playing');
+    planeX = -0.35;
+    loop();
+  } else {
+    btn.textContent = '▶ Anima il transito';
+    btn.classList.remove('playing');
+    cancelAnimationFrame(animFrame);
+    planeX = 0.5;
+    drawScene(planeX);
+  }
+}
+
+function loop() {
+  planeX += 0.0018;
+  drawScene(planeX);
+  if (planeX < 1.35 && animating) {
+    animFrame = requestAnimationFrame(loop);
+  } else {
+    animating = false;
+    document.getElementById('playBtn').textContent = '▶ Anima il transito';
+    document.getElementById('playBtn').classList.remove('playing');
+    planeX = 0.5;
+    drawScene(planeX);
+  }
+}
+
+function setTarget(t) {
+  target = t;
+  document.getElementById('btnMoon').classList.toggle('active', t==='moon');
+  document.getElementById('btnSun').classList.toggle('active', t==='sun');
+  document.getElementById('statBodyAngle').textContent = (t==='moon'?'0.50':'0.53') + '°';
+  update();
+}
+
+function setFocal(v) {
+  document.getElementById('focalSlider').value = v;
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.textContent == v));
+  update();
+}
+
+function update() {
+  document.getElementById('focalLabel').textContent = document.getElementById('focalSlider').value + 'mm';
+  document.getElementById('distLabel').textContent  = parseFloat(document.getElementById('distSlider').value).toFixed(1) + ' km';
+  drawScene(planeX);
+}
+
+planeX = 0.5;
+update();
+</script>
+</body>
+</html>
