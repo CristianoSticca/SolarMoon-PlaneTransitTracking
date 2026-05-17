@@ -6,10 +6,13 @@
   "login": {
     "title": "Sign in",
     "emailPlaceholder": "your@email.com",
-    "submit": "Send Magic Link",
-    "hint": "No password required — you'll receive a link by email",
-    "sent": "Link sent! Check your inbox.",
-    "error": "Error sending link. Please try again."
+    "submit": "Send Code",
+    "hint": "No password required — you'll receive a 6-digit code by email",
+    "sent": "Code sent to",
+    "error": "Error sending code. Please try again.",
+    "errorCode": "Invalid or expired code. Please try again.",
+    "verify": "Sign in",
+    "changeEmail": "Use a different email"
   },
   "onboarding": {
     "gps": { "title": "GPS Location", "desc": "Required to calculate transits from your position", "action": "Allow" },

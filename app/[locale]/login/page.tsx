@@ -4,25 +4,50 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const t = useTranslations('login')
   const tApp = useTranslations('app')
   const params = useParams()
   const locale = params.locale as string
+  const router = useRouter()
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle')
+  const [code, setCode] = useState('')
+  const [step, setStep] = useState<'email' | 'code'>('email')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const supabase = createClient()
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault()
-    setStatus('loading')
-    const { error } = await supabase.auth.signInWithOtp({
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.signInWithOtp({ email })
+    if (error) {
+      setError(t('error'))
+    } else {
+      setStep('code')
+    }
+    setLoading(false)
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.verifyOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/${locale}/monitor` },
+      token: code.trim(),
+      type: 'email',
     })
-    setStatus(error ? 'error' : 'sent')
+    if (error) {
+      setError(t('errorCode'))
+    } else {
+      router.push(`/${locale}/monitor`)
+      router.refresh()
+    }
+    setLoading(false)
   }
 
   return (
@@ -41,10 +66,8 @@ export default function LoginPage() {
           className="rounded-2xl p-8"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
-          {status === 'sent' ? (
-            <p className="text-center" style={{ color: '#4ade80' }}>{t('sent')}</p>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {step === 'email' ? (
+            <form onSubmit={handleSendCode} className="space-y-4">
               <input
                 type="email"
                 required
@@ -60,7 +83,7 @@ export default function LoginPage() {
               />
               <button
                 type="submit"
-                disabled={status === 'loading'}
+                disabled={loading}
                 className="w-full rounded-xl py-3 text-sm font-semibold transition-colors disabled:opacity-50"
                 style={{
                   background: 'rgba(232,200,72,0.15)',
@@ -68,11 +91,54 @@ export default function LoginPage() {
                   color: '#e8c848',
                 }}
               >
-                {status === 'loading' ? '...' : t('submit')}
+                {loading ? '...' : t('submit')}
               </button>
-              {status === 'error' && (
-                <p className="text-center text-xs" style={{ color: '#f87171' }}>{t('error')}</p>
+              {error && (
+                <p className="text-center text-xs" style={{ color: '#f87171' }}>{error}</p>
               )}
+            </form>
+          ) : (
+            <form onSubmit={handleVerify} className="space-y-4">
+              <p className="text-center text-xs mb-2" style={{ color: '#4ade80' }}>
+                {t('sent')} <strong style={{ color: '#e8eaf0' }}>{email}</strong>
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                required
+                value={code}
+                onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="w-full rounded-xl px-4 py-3 text-center text-2xl tracking-[0.4em] font-semibold focus:outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e8eaf0',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={loading || code.length < 6}
+                className="w-full rounded-xl py-3 text-sm font-semibold transition-colors disabled:opacity-50"
+                style={{
+                  background: 'rgba(232,200,72,0.15)',
+                  border: '1px solid rgba(232,200,72,0.4)',
+                  color: '#e8c848',
+                }}
+              >
+                {loading ? '...' : t('verify')}
+              </button>
+              {error && (
+                <p className="text-center text-xs" style={{ color: '#f87171' }}>{error}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => { setStep('email'); setCode(''); setError('') }}
+                className="w-full text-center text-xs"
+                style={{ color: '#8892a4' }}
+              >
+                {t('changeEmail')}
+              </button>
             </form>
           )}
 

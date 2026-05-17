@@ -6,10 +6,13 @@
   "login": {
     "title": "Accedi",
     "emailPlaceholder": "la-tua@email.com",
-    "submit": "Invia Magic Link",
-    "hint": "Nessuna password richiesta — riceverai un link via email",
-    "sent": "Link inviato! Controlla la tua casella email.",
-    "error": "Errore durante l'invio. Riprova."
+    "submit": "Invia Codice",
+    "hint": "Nessuna password richiesta — riceverai un codice a 6 cifre via email",
+    "sent": "Codice inviato a",
+    "error": "Errore durante l'invio. Riprova.",
+    "errorCode": "Codice non valido o scaduto. Riprova.",
+    "verify": "Accedi",
+    "changeEmail": "Usa un'altra email"
   },
   "onboarding": {
     "gps": { "title": "Posizione GPS", "desc": "Necessaria per calcolare i transiti dalla tua posizione", "action": "Autorizza" },
