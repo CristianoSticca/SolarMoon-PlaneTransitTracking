@@ -106,6 +106,7 @@
   },
   "nav": {
     "monitor": "Monitor",
+    "simulator": "Simulator",
     "settings": "Settings",
     "guide": "Guide"
   },

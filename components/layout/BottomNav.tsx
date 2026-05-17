@@ -9,9 +9,10 @@ interface Props {
 }
 
 const tabs = [
-  { key: 'monitor' as const, icon: '◎', path: (l: string) => `/${l}/monitor` },
-  { key: 'settings' as const, icon: '⚙', path: (l: string) => `/${l}/settings` },
-  { key: 'guide' as const, icon: '📖', path: (l: string) => `/${l}/guide` },
+  { key: 'monitor'   as const, icon: '◎',  path: (l: string) => `/${l}/monitor` },
+  { key: 'simulator' as const, icon: '🔭', path: (l: string) => `/${l}/simulator` },
+  { key: 'settings'  as const, icon: '⚙',  path: (l: string) => `/${l}/settings` },
+  { key: 'guide'     as const, icon: '📖', path: (l: string) => `/${l}/guide` },
 ]
 
 export function BottomNav({ locale }: Props) {
