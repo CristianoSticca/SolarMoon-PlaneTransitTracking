@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useFlights } from '@/hooks/useFlights'
 import { useTransitDetection } from '@/hooks/useTransitDetection'
@@ -99,6 +99,9 @@ export default function MonitorPage() {
     enabled: geo.status === 'granted',
   })
 
+  const searchParams = useSearchParams()
+  const mockTransitTarget = searchParams.get('mockTransit') as 'moon' | 'sun' | null
+
   const { events: transitEvents, nearby: nearbyAircraft } = useTransitDetection({
     aircraft: flightData?.aircraft ?? [],
     lat: lat ?? 0,
@@ -137,6 +140,29 @@ export default function MonitorPage() {
     const now = new Date()
     return { moon: getMoonInfo(lat, lon, now), sun: getSunInfo(lat, lon, now) }
   }, [lat, lon])
+
+  const mockTransitEvent = useMemo(() => {
+    if (!mockTransitTarget || !celestial) return null
+    const pos = mockTransitTarget === 'moon' ? celestial.moon.position : celestial.sun.position
+    return {
+      aircraft: {
+        icao: 'MOCK01',
+        callsign: 'TEST123',
+        lat: lat ?? 0,
+        lon: lon ?? 0,
+        altitudeFt: 35000,
+        heading: Math.round(pos.azimuth),
+        speedKnots: 480,
+        aircraftType: 'A330',
+      },
+      target: mockTransitTarget,
+      contactTimestamp: Date.now() + 120_000,
+      countdown: 120,
+      minAngularSeparation: 0.18,
+    } as import('@/lib/astronomy/transit').TransitEvent
+  }, [mockTransitTarget, celestial, lat, lon])
+
+  const activeTransitEvents = mockTransitEvent ? [mockTransitEvent] : transitEvents
 
   async function handleLogout() {
     await createClient().auth.signOut()
@@ -238,23 +264,23 @@ export default function MonitorPage() {
         view === 'radar' ? (
           <RadarView
             aircraft={flightData?.aircraft ?? []}
-            transitEvents={transitEvents}
+            transitEvents={activeTransitEvents}
             lat={lat}
             lon={lon}
           />
         ) : view === 'list' ? (
-          <ListView events={transitEvents} nearby={nearbyAircraft} />
+          <ListView events={activeTransitEvents} nearby={nearbyAircraft} />
         ) : view === 'map' ? (
           <MapView
             aircraft={flightData?.aircraft ?? []}
-            transitEvents={transitEvents}
+            transitEvents={activeTransitEvents}
             lat={lat}
             lon={lon}
           />
         ) : (
           <ARView
             aircraft={flightData?.aircraft ?? []}
-            transitEvents={transitEvents}
+            transitEvents={activeTransitEvents}
             lat={lat}
             lon={lon}
             onClose={() => setView('radar')}
@@ -271,7 +297,14 @@ export default function MonitorPage() {
 
       {/* Transit alert — always fixed at bottom */}
       {geo.status === 'granted' && (
-        <TransitAlert event={transitEvents[0] ?? null} />
+        <TransitAlert
+          event={activeTransitEvents[0] ?? null}
+          celestialPos={
+            activeTransitEvents[0]
+              ? (activeTransitEvents[0].target === 'moon' ? celestial?.moon.position : celestial?.sun.position)
+              : undefined
+          }
+        />
       )}
 
     </div>

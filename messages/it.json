@@ -32,7 +32,16 @@
     "sun": "Sole",
     "angularError": "Scarto ±{deg}°",
     "wakeLock": "Schermo acceso",
-    "aircraft": "{count} aerei nel raggio"
+    "aircraft": "{count} aerei nel raggio",
+    "transitAlertLabel": "Avviso Transito",
+    "transitHeadlineIn": "Aereo verso {target} tra {time}",
+    "transitHeadlineNow": "Aereo in transito su {target} ORA",
+    "onTrajectory": "in rotta di transito.",
+    "lookDirection": "Guarda a {az}° {cardinal}, {el}° sull'orizzonte.",
+    "azimuth": "Azimut",
+    "elevation": "Elevazione",
+    "separation": "Separazione",
+    "aircraftAlt": "Quota aereo"
   },
   "settings": {
     "title": "Impostazioni",
@@ -56,6 +65,10 @@
     "notifRequest": "Abilita notifiche",
     "save": "Salva",
     "saved": "Salvato!",
+    "simTitle": "Simulazione transito",
+    "simDesc": "Apre il monitor con un evento fittizio (TEST123 A330, countdown 2 min) per visualizzare la scheda di avviso.",
+    "simMoon": "Transito Luna",
+    "simSun": "Transito Sole",
     "healthTitle": "Stato connessioni",
     "healthRun": "Verifica",
     "healthUnconfigured": "non configurato",

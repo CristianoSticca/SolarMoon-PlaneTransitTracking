@@ -492,6 +492,34 @@ export function SettingsForm({
         )}
       </div>
 
+      {/* Transit simulation */}
+      <div style={cardStyle}>
+        <p style={{ ...labelStyle, marginBottom: 4 }}>{t('simTitle')}</p>
+        <p style={{ ...mutedStyle, fontSize: 10, marginBottom: 10 }}>{t('simDesc')}</p>
+        <div className="flex gap-2">
+          {(['moon', 'sun'] as const).map(target => (
+            <button
+              key={target}
+              onClick={() => router.push(`/${locale}/monitor?mockTransit=${target}`)}
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                borderRadius: 8,
+                fontSize: 11,
+                fontWeight: 600,
+                background: 'rgba(232,200,72,0.12)',
+                border: '1px solid rgba(232,200,72,0.25)',
+                color: '#e8c848',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {target === 'moon' ? `🌙 ${t('simMoon')}` : `☀️ ${t('simSun')}`}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Save button */}
       <button
         onClick={handleSave}
