@@ -23,9 +23,13 @@ const copy = {
       { icon: '🔔', title: 'Notifiche anticipate', desc: 'Push anche con app chiusa, configurabile da 3 a 5 minuti prima del transito.' },
       { icon: '🗺️', title: 'Mappa & Vista AR', desc: 'Mappa geografica live e aerei sovraimpressi nel cielo reale via fotocamera.' },
       { icon: '🌅', title: 'Finestra fotografica', desc: 'Filtra i transiti per luce ideale: imposta soglia di elevazione lunare e solare.' },
+      { icon: '🔭', title: 'Simulatore FOV', desc: 'Prima di uscire, scopri quanto grande sarà la Luna nel mirino e quanto spazio occuperà l\'aereo — con canvas animato e statistiche.' },
     ],
     photoTitle: '🌅 Finestra fotografica',
     photoDesc: 'Ricevi notifiche solo quando la luce è quella giusta. Imposta la soglia di elevazione della Luna (per transiti notturni) e del Sole (per golden hour e alba/tramonto). Nessun avviso inutile.',
+    simulatorTitle: '🔭 Simulatore FOV',
+    simulatorDesc: 'Scegli soggetto (Luna o Sole), corpo macchina (Full Frame / APS-C / Micro 4/3), focale (100–1200 mm) e tipo di aereo. Il canvas mostra le proporzioni angolari reali e anima il transito. La statistica chiave: aereo vs disco lunare — ≥30% ottimo, ≥15% discreto, <15% l\'aereo rischia di perdersi.',
+    simulatorCta: 'Prova il simulatore',
     waitlistTitle: 'Accesso anticipato',
     waitlistDesc: `Lascia la tua email — ti avviseremo quando l'accesso sarà aperto.`,
     waitlistPlaceholder: 'la-tua@email.com',
@@ -55,9 +59,13 @@ const copy = {
       { icon: '🔔', title: 'Early notifications', desc: 'Push alerts even with the app closed, configurable 3–5 minutes before transit.' },
       { icon: '🗺️', title: 'Map & AR View', desc: 'Live geographic map and aircraft overlaid on the real sky via camera.' },
       { icon: '🌅', title: 'Photo window', desc: 'Filter transits by ideal light: set lunar and solar elevation thresholds.' },
+      { icon: '🔭', title: 'FOV Simulator', desc: 'Before heading out, see how large the Moon will fill your frame and how much space the aircraft will occupy — with an animated canvas and live stats.' },
     ],
     photoTitle: '🌅 Photo window',
     photoDesc: 'Get notified only when the light is right. Set the Moon elevation threshold (for night transits) and Sun elevation (for golden hour and sunrise/sunset). No useless alerts.',
+    simulatorTitle: '🔭 FOV Simulator',
+    simulatorDesc: 'Choose subject (Moon or Sun), camera body (Full Frame / APS-C / Micro 4/3), focal length (100–1200 mm) and aircraft type. The canvas shows true angular proportions and animates the transit. Key stat: aircraft vs lunar disk — ≥30% great, ≥15% decent, <15% the aircraft risks getting lost in the disk.',
+    simulatorCta: 'Try the simulator',
     waitlistTitle: 'Early access',
     waitlistDesc: 'Leave your email — we\'ll notify you when access opens.',
     waitlistPlaceholder: 'your@email.com',
@@ -204,6 +212,15 @@ export default function LandingPage() {
       <section style={{ position: 'relative', zIndex: 1, padding: '32px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(232,200,72,0.03)', maxWidth: 640, margin: '0 auto' }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#e8c848', marginBottom: 10 }}>{t.photoTitle}</div>
         <p style={{ fontSize: 13, color: '#8892a4', lineHeight: 1.7 }}>{t.photoDesc}</p>
+      </section>
+
+      {/* FOV SIMULATOR */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '32px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(100,80,200,0.04)', maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: '#a090e0', marginBottom: 10 }}>{t.simulatorTitle}</div>
+        <p style={{ fontSize: 13, color: '#8892a4', lineHeight: 1.7, marginBottom: 16 }}>{t.simulatorDesc}</p>
+        <Link href={`/${locale}/simulator`} style={{ display: 'inline-block', padding: '10px 22px', borderRadius: 999, border: '1px solid rgba(160,144,224,0.4)', color: '#a090e0', fontSize: 13, fontWeight: 600, textDecoration: 'none', letterSpacing: '0.03em' }}>
+          {t.simulatorCta} →
+        </Link>
       </section>
 
       {/* WAITLIST */}

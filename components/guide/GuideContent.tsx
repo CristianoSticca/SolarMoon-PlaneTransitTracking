@@ -120,6 +120,46 @@ function PhotoWindowExamples({ t }: { t: ReturnType<typeof useTranslations<'guid
   )
 }
 
+function FovSimulatorDiagram() {
+  return (
+    <svg width="160" height="100" viewBox="0 0 160 100">
+      {/* Dark sky background */}
+      <rect x="0" y="0" width="160" height="100" fill="#07070f" rx="8" />
+      {/* Stars */}
+      {[[20,15],[50,8],[90,20],[130,12],[145,35],[15,55],[140,70],[35,80],[110,85]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="0.8" fill="white" opacity={0.4 + (i % 3) * 0.2} />
+      ))}
+      {/* Rule-of-thirds grid */}
+      <line x1="0" y1="33" x2="160" y2="33" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+      <line x1="0" y1="66" x2="160" y2="66" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+      <line x1="53" y1="0" x2="53" y2="100" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+      <line x1="106" y1="0" x2="106" y2="100" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+      {/* Moon */}
+      <circle cx="80" cy="50" r="22" fill="#2a2420" />
+      <circle cx="80" cy="50" r="22" fill="none" stroke="rgba(255,220,150,0.8)" strokeWidth="1.5" />
+      <circle cx="80" cy="50" r="22" fill="rgba(255,220,130,0.12)" />
+      {/* Moon craters */}
+      <circle cx="73" cy="44" r="3" fill="none" stroke="rgba(200,180,120,0.3)" strokeWidth="1" />
+      <circle cx="86" cy="57" r="2" fill="none" stroke="rgba(200,180,120,0.25)" strokeWidth="0.8" />
+      {/* Aircraft trajectory */}
+      <line x1="15" y1="52" x2="145" y2="48" stroke="rgba(100,200,100,0.4)" strokeWidth="0.8" strokeDasharray="4,3" />
+      {/* Aircraft silhouette */}
+      <ellipse cx="58" cy="50" rx="9" ry="2" fill="#78e0a0" opacity="0.9" />
+      <polygon points="67,50 72,48 67,51" fill="#78e0a0" opacity="0.9" />
+      <line x1="58" y1="50" x2="58" y2="43" stroke="#78e0a0" strokeWidth="1.5" opacity="0.9" />
+      <line x1="53" y1="50" x2="63" y2="50" stroke="#78e0a0" strokeWidth="2.5" opacity="0.9" />
+      {/* FOV angle lines */}
+      <line x1="80" y1="50" x2="0" y2="10" stroke="rgba(200,184,112,0.25)" strokeWidth="0.7" />
+      <line x1="80" y1="50" x2="160" y2="10" stroke="rgba(200,184,112,0.25)" strokeWidth="0.7" />
+      <line x1="80" y1="50" x2="0" y2="90" stroke="rgba(200,184,112,0.25)" strokeWidth="0.7" />
+      <line x1="80" y1="50" x2="160" y2="90" stroke="rgba(200,184,112,0.25)" strokeWidth="0.7" />
+      {/* Labels */}
+      <text x="80" y="8" textAnchor="middle" fill="rgba(200,184,112,0.6)" fontSize="7" fontFamily="monospace">FOV</text>
+      <text x="61" y="40" textAnchor="middle" fill="rgba(120,224,160,0.8)" fontSize="6" fontFamily="monospace">✈</text>
+    </svg>
+  )
+}
+
 export function GuideContent() {
   const t = useTranslations('guide')
 
@@ -178,6 +218,12 @@ export function GuideContent() {
         title={t('photoWindow.title')}
         desc={t('photoWindow.desc')}
         visual={<PhotoWindowExamples t={t} />}
+      />
+      <Section
+        icon="🔭"
+        title={t('simulator.title')}
+        desc={t('simulator.desc')}
+        visual={<FovSimulatorDiagram />}
       />
     </div>
   )

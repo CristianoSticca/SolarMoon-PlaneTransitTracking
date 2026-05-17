@@ -23,6 +23,7 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 - **2-provider fallback** — Airplanes.live → OpenSky Network, automatic failover
 - **API health check** — built-in panel in Settings to verify provider and AirLabs connectivity
 - **Photo window** — filter transits by celestial elevation: minimum Moon elevation (for night transits) and maximum Sun elevation (for golden hour / sunrise / sunset); nearby aircraft always shown regardless of filter
+- **FOV Simulator** — 4-step wizard to preview how large the Moon/Sun and a transiting aircraft will appear through any camera + lens combo; animated canvas shows true angular proportions, FOV category, Moon pixel span, and aircraft-vs-lunar-disk percentage to judge shot quality before heading out
 - **Configurable parameters** — search radius (10–450 km), angular margin (±0.2° / ±0.5° / ±1.5°), notification lead time, photo window thresholds
 - **Celestial info cards** — real-time Moon and Sun azimuth, elevation, rise/set times and moon phase icon on the monitor screen
 - **Screen wake lock** — keeps display on while monitoring
@@ -39,6 +40,7 @@ A progressive web app for astrophotographers to detect aircraft transits across 
 | ☰ Lista | Sorted list of transit countdowns (green) + nearby aircraft with projected min separation (grey). |
 | 🗺️ Mappa | Leaflet map, OSM tiles. Yellow aircraft icons. Fetches aircraft for visible map bounds on zoom/pan (up to 450 km radius). Click for detail panel with AirLabs enrichment. |
 | 📷 AR | Camera feed with aircraft/Moon/Sun overlaid at correct sky positions. Requires compass permission on iOS. Tap aircraft for quick popup. |
+| 🔭 Simulatore | 4-step wizard: choose subject (Moon/Sun), camera body (Full Frame / APS-C / Micro 4/3), focal length (100–1200 mm) and aircraft type. Animated canvas preview shows true angular proportions plus FOV, Moon pixel span and aircraft-vs-lunar-disk stats. |
 
 ---
 
@@ -145,7 +147,7 @@ npm run dev
 npm run test
 ```
 
-The test suite covers the astronomy library (celestial position calculations, transit detection algorithm) and flight data normalizers.
+The test suite covers the astronomy library (celestial position calculations, transit detection algorithm), flight data normalizers, and the FOV simulator math (field-of-view calculation, angular size, pixel span).
 
 ---
 

@@ -102,6 +102,10 @@
       "sunExample1": "☀️ Sole a 8° alle 07:15 — ottimo: luce dorata radente, colori caldi, aereo ben visibile.",
       "sunExample2": "☀️ Sole a 35° alle 10:00 — sconsigliato: luce piatta e dura, foto poco suggestiva.",
       "tip": "Regola la soglia in base alle tue condizioni locali: in montagna l'orizzonte è spesso libero e puoi tenere la luna anche a 5°; in città con molto smog conviene alzare la soglia."
+    },
+    "simulator": {
+      "title": "Simulatore FOV",
+      "desc": "Prima di uscire a fotografare, scopri quanto grande apparirà la Luna (o il Sole) nel tuo mirino e quanto spazio occuperà l'aereo sul disco. Scegli il soggetto, il corpo macchina, la focale e il tipo di aereo: il canvas mostra le proporzioni reali e anima il transito. Usa la statistica \"aereo vs disco lunare\" come guida: ≥30% ottimo, ≥15% discreto, <15% l'aereo rischia di perdersi nel disco. L'aereo è simulato a 10 km di distanza dal punto di transito."
     }
   },
   "nav": {
