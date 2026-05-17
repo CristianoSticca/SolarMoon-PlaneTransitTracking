@@ -26,6 +26,14 @@ const copy = {
     ],
     photoTitle: '🌅 Finestra fotografica',
     photoDesc: 'Ricevi notifiche solo quando la luce è quella giusta. Imposta la soglia di elevazione della Luna (per transiti notturni) e del Sole (per golden hour e alba/tramonto). Nessun avviso inutile.',
+    waitlistTitle: 'Accesso anticipato',
+    waitlistDesc: `Lascia la tua email — ti avviseremo quando l'accesso sarà aperto.`,
+    waitlistPlaceholder: 'la-tua@email.com',
+    waitlistCta: 'Iscriviti',
+    waitlistLoading: 'Invio...',
+    waitlistSuccess: `Iscritto! Ti avviseremo quando l'app sarà disponibile.`,
+    waitlistDuplicate: `Sei già in lista. Ti avviseremo a breve.`,
+    waitlistError: `Errore nell'iscrizione. Riprova tra qualche istante.`,
     footerSub: 'Gratuito · Nessun account richiesto',
     footerCta: 'Inizia ora',
   },
@@ -50,6 +58,14 @@ const copy = {
     ],
     photoTitle: '🌅 Photo window',
     photoDesc: 'Get notified only when the light is right. Set the Moon elevation threshold (for night transits) and Sun elevation (for golden hour and sunrise/sunset). No useless alerts.',
+    waitlistTitle: 'Early access',
+    waitlistDesc: 'Leave your email — we\'ll notify you when access opens.',
+    waitlistPlaceholder: 'your@email.com',
+    waitlistCta: 'Join waitlist',
+    waitlistLoading: 'Sending...',
+    waitlistSuccess: 'You\'re on the list! We\'ll reach out when the app is available.',
+    waitlistDuplicate: 'You\'re already on the list. We\'ll be in touch soon.',
+    waitlistError: 'Something went wrong. Please try again in a moment.',
     footerSub: 'Free · No account required',
     footerCta: 'Get started',
   },
@@ -81,6 +97,31 @@ function StarCanvas() {
 export default function LandingPage() {
   const [locale, setLocale] = useState<'it' | 'en'>('it')
   const t = copy[locale]
+
+  const [waitlistEmail, setWaitlistEmail] = useState('')
+  const [waitlistState, setWaitlistState] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle')
+
+  async function handleWaitlist(e: React.FormEvent) {
+    e.preventDefault()
+    setWaitlistState('loading')
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: waitlistEmail }),
+      })
+      if (res.status === 201) {
+        setWaitlistState('success')
+        setWaitlistEmail('')
+      } else if (res.status === 200) {
+        setWaitlistState('duplicate')
+      } else {
+        setWaitlistState('error')
+      }
+    } catch {
+      setWaitlistState('error')
+    }
+  }
 
   return (
     <div style={{ background: '#060e1a', color: '#e8eaf0', minHeight: '100dvh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
@@ -163,6 +204,63 @@ export default function LandingPage() {
       <section style={{ position: 'relative', zIndex: 1, padding: '32px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(232,200,72,0.03)', maxWidth: 640, margin: '0 auto' }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#e8c848', marginBottom: 10 }}>{t.photoTitle}</div>
         <p style={{ fontSize: 13, color: '#8892a4', lineHeight: 1.7 }}>{t.photoDesc}</p>
+      </section>
+
+      {/* WAITLIST */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '40px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8892a4', marginBottom: 10 }}>{t.waitlistTitle}</div>
+        <p style={{ fontSize: 13, color: '#8892a4', lineHeight: 1.6, marginBottom: 20 }}>{t.waitlistDesc}</p>
+        <form
+          onSubmit={handleWaitlist}
+          action="/api/waitlist"
+          method="POST"
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+        >
+          <input
+            type="email"
+            required
+            value={waitlistEmail}
+            onChange={e => setWaitlistEmail(e.target.value)}
+            placeholder={t.waitlistPlaceholder}
+            disabled={waitlistState === 'loading' || waitlistState === 'success' || waitlistState === 'duplicate'}
+            style={{
+              flex: '1 1 220px',
+              padding: '11px 16px',
+              borderRadius: 999,
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.05)',
+              color: '#e8eaf0',
+              fontSize: 14,
+              outline: 'none',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={waitlistState === 'loading' || waitlistState === 'success' || waitlistState === 'duplicate'}
+            style={{
+              padding: '11px 24px',
+              borderRadius: 999,
+              border: 'none',
+              background: waitlistState === 'success' || waitlistState === 'duplicate' ? 'rgba(232,200,72,0.25)' : '#e8c848',
+              color: waitlistState === 'success' || waitlistState === 'duplicate' ? '#e8c848' : '#060e1a',
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: waitlistState === 'loading' || waitlistState === 'success' || waitlistState === 'duplicate' ? 'default' : 'pointer',
+              letterSpacing: '0.03em',
+            }}
+          >
+            {waitlistState === 'loading' ? t.waitlistLoading : t.waitlistCta}
+          </button>
+        </form>
+        {waitlistState === 'success' && (
+          <p style={{ marginTop: 12, fontSize: 13, color: '#6fcf97' }}>{t.waitlistSuccess}</p>
+        )}
+        {waitlistState === 'duplicate' && (
+          <p style={{ marginTop: 12, fontSize: 13, color: '#e8c848' }}>{t.waitlistDuplicate}</p>
+        )}
+        {waitlistState === 'error' && (
+          <p style={{ marginTop: 12, fontSize: 13, color: '#eb5757' }}>{t.waitlistError}</p>
+        )}
       </section>
 
       {/* FOOTER CTA */}
