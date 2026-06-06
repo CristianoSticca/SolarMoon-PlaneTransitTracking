@@ -36,7 +36,14 @@ export default async function LocaleLayout({
         </div>
         <BottomNav locale={locale} />
       </div>
-      <Script id="a2hs" strategy="afterInteractive">{`
+      <Script id="sw-register" strategy="afterInteractive">{`
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').catch(function(err) {
+              console.error('SW registration failed:', err);
+            });
+          });
+        }
         window.addEventListener('beforeinstallprompt', function(e) {
           e.preventDefault();
           window.__a2hsEvent = e;
